@@ -1,0 +1,12 @@
+*.ld
+*.dbi
+*.rapp
+*.xml
+*.xdb
+*/objdebug/*
+*.ctx
+*.rprj
+*.lib
+*.bat
+*.lst
+*~
