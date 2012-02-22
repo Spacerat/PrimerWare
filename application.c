@@ -7,7 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "circle_api.h"
-#include "MenuDraw.h"
+#include "MenuHandler.h"
 
 /* Private defines -----------------------------------------------------------*/
 
@@ -19,7 +19,7 @@
 static enum MENU_code MsgVersion(void);
 
 /* Public variables ----------------------------------------------------------*/
-const char Application_Name[8+1] = {"My App"};      // Max 8 characters
+const char Application_Name[8+1] = {"Pri.War."};      // Max 8 characters
 
 
 /*******************************************************************************
@@ -39,12 +39,16 @@ enum MENU_code Application_Ini(void) {
     // If you don't reset the offset on EvoPrimer, the screen will be reduced
     // to 128x128 pixels for Primer2 compatibility
     LCD_SetOffset(OFFSET_OFF);
+	
+	// Disable screen rotation.
+	LCD_SetRotateScreen(0);
 
-	// Draw the menu.
-	drawMenu();
+	// Run the MenuHandler.
+	MENUHANDLER_run();
     
-    // Your can set the frequency of the call by the system.
-    MENU_SetAppliDivider(1000);
+    // Set speed.
+	UTIL_SetPll(SPEED_VERY_HIGH);
+    MENU_SetAppliDivider(10);
 
     return MENU_CONTINUE_COMMAND;
     }
@@ -82,6 +86,8 @@ enum MENU_code Application_Handler(void)
     cnt++;
 #endif
 
+		MENUHANDLER_run();
+		
     // If the button is pressed, the application is exited
     if (BUTTON_GetState() == BUTTON_PUSHED)
         {

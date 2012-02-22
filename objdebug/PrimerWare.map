@@ -1,7 +1,7 @@
 Archive member included because of file (symbol)
 
 c:/program files (x86)/raisonance/ride/arm-gcc/bin/../lib/gcc/arm-none-eabi/4.5.1/../../../../arm-none-eabi/lib/thumb2\libc.a(lib_a-strcmp.o)
-                              C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o (strcmp)
+                              C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o (strcmp)
 
 Allocating common symbols
 Common symbol       size              file
@@ -29,8 +29,9 @@ EXTMEMB3         0x00000000         0x00000000         xr
 Linker script and memory map
 
 LOAD C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
-LOAD C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
-LOAD C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+LOAD C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+LOAD C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+LOAD C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 START GROUP
 LOAD C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\std_sbrk_thumb.lib
 LOAD C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\smallprintf_thumb.a
@@ -163,86 +164,118 @@ END GROUP
  *(.flashtext)
                 0x08006010                . = ALIGN (0x4)
 
-.text           0x08006010      0x4e4
+.text           0x08006010      0x85c
                 0x08006010                . = ALIGN (0x4)
  *(.text)
  .text          0x08006010        0x0 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
- .text          0x08006010        0x0 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
- .text          0x08006010        0x0 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+ .text          0x08006010        0x0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .text          0x08006010        0x0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .text          0x08006010        0x0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
  .text          0x08006010      0x1dc c:/program files (x86)/raisonance/ride/arm-gcc/bin/../lib/gcc/arm-none-eabi/4.5.1/../../../../arm-none-eabi/lib/thumb2\libc.a(lib_a-strcmp.o)
                 0x08006010                strcmp
  *(.text.*)
  .text.Application_Entry
                 0x080061ec       0x50 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
  .text.Application_Ini
-                0x0800623c       0x68 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
+                0x0800623c       0x90 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
                 0x0800623c                Application_Ini
  .text.Application_Handler
-                0x080062a4       0x4c C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
-                0x080062a4                Application_Handler
+                0x080062cc       0x50 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                0x080062cc                Application_Handler
  .text.MsgVersion
-                0x080062f0      0x13c C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
- .text.drawMenu
-                0x0800642c       0x10 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
-                0x0800642c                drawMenu
- .text.drawTitle
-                0x0800643c       0x80 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
-                0x0800643c                drawTitle
+                0x0800631c      0x13c C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .text.MENUDRAW_setupDrawing
+                0x08006458       0x44 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x08006458                MENUDRAW_setupDrawing
+ .text.MENUDRAW_drawMenu
+                0x0800649c       0x20 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x0800649c                MENUDRAW_drawMenu
+ .text.MENUDRAW_drawTitle
+                0x080064bc       0x44 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x080064bc                MENUDRAW_drawTitle
+ .text.MENUDRAW_drawPlayersMenu
+                0x08006500       0xd0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x08006500                MENUDRAW_drawPlayersMenu
+ .text.MENUDRAW_clearButtonAreas
+                0x080065d0       0x60 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x080065d0                MENUDRAW_clearButtonAreas
+ .text.MENUDRAW_drawTwoPlayerGameTypeMenu
+                0x08006630       0xcc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x08006630                MENUDRAW_drawTwoPlayerGameTypeMenu
+ .text.MENUHANDLER_run
+                0x080066fc       0xdc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                0x080066fc                MENUHANDLER_run
+ .text.MENUHANDLER_SinglePlayer
+                0x080067d8        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                0x080067d8                MENUHANDLER_SinglePlayer
+ .text.MENUHANDLER_MultiPlayer
+                0x080067e4        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                0x080067e4                MENUHANDLER_MultiPlayer
+ .text.MENUHANDLER_CoOp
+                0x080067f0        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                0x080067f0                MENUHANDLER_CoOp
+ .text.MENUHANDLER_Vs
+                0x080067fc        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                0x080067fc                MENUHANDLER_Vs
  *(.rodata)
- .rodata        0x080064bc       0x2c C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
-                0x080064bc                Application_Name
- .rodata        0x080064e8        0xc C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+ .rodata        0x08006808       0x2c C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                0x08006808                Application_Name
+ .rodata        0x08006834       0x38 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
  *(.rodata*)
  *(.glue_7)
  .glue_7        0x00000000        0x0 linker stubs
  *(.glue_7t)
  .glue_7t       0x00000000        0x0 linker stubs
-                0x080064f4                . = ALIGN (0x4)
-                0x080064f4                _etext = .
-                0x080064f4                _sidata = _etext
+                0x0800686c                . = ALIGN (0x4)
+                0x0800686c                _etext = .
+                0x0800686c                _sidata = _etext
 
-.vfp11_veneer   0x080064f4        0x0
+.vfp11_veneer   0x0800686c        0x0
  .vfp11_veneer  0x00000000        0x0 linker stubs
 
-.v4_bx          0x080064f4        0x0
+.v4_bx          0x0800686c        0x0
  .v4_bx         0x00000000        0x0 linker stubs
 
-.data           0x20000000        0x0 load address 0x080064f4
+.data           0x20000000        0x4 load address 0x0800686c
                 0x20000000                . = ALIGN (0x4)
                 0x20000000                _sdata = .
  *(.data)
  .data          0x20000000        0x0 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
- .data          0x20000000        0x0 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
- .data          0x20000000        0x0 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
- .data          0x20000000        0x0 c:/program files (x86)/raisonance/ride/arm-gcc/bin/../lib/gcc/arm-none-eabi/4.5.1/../../../../arm-none-eabi/lib/thumb2\libc.a(lib_a-strcmp.o)
+ .data          0x20000000        0x0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .data          0x20000000        0x0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .data          0x20000000        0x1 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+ .data          0x20000001        0x0 c:/program files (x86)/raisonance/ride/arm-gcc/bin/../lib/gcc/arm-none-eabi/4.5.1/../../../../arm-none-eabi/lib/thumb2\libc.a(lib_a-strcmp.o)
  *(.data.*)
-                0x20000000                . = ALIGN (0x4)
-                0x20000000                _edata = .
+                0x20000004                . = ALIGN (0x4)
+ *fill*         0x20000001        0x3 00
+                0x20000004                _edata = .
                 0x00000000                toobig = (((_sidata + _edata) - _sdata) > _eflash)?!!!!!!!!! FLASH IS FULL !!!!!!!!!:0x0
 
-.bss            0x20000000        0x4 load address 0x080064f4
-                0x20000000                . = ALIGN (0x4)
-                0x20000000                _sbss = .
+.bss            0x20000004        0x8 load address 0x08006870
+                0x20000004                . = ALIGN (0x4)
+                0x20000004                _sbss = .
  *(.bss)
- .bss           0x20000000        0x0 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
- .bss           0x20000000        0x0 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
- .bss           0x20000000        0x0 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
- .bss           0x20000000        0x0 c:/program files (x86)/raisonance/ride/arm-gcc/bin/../lib/gcc/arm-none-eabi/4.5.1/../../../../arm-none-eabi/lib/thumb2\libc.a(lib_a-strcmp.o)
+ .bss           0x20000004        0x0 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
+ .bss           0x20000004        0x0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .bss           0x20000004        0x0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .bss           0x20000004        0x1 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+ .bss           0x20000005        0x0 c:/program files (x86)/raisonance/ride/arm-gcc/bin/../lib/gcc/arm-none-eabi/4.5.1/../../../../arm-none-eabi/lib/thumb2\libc.a(lib_a-strcmp.o)
  *(COMMON)
- COMMON         0x20000000        0x4 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
-                0x20000000                ptrCircle_API
-                0x20000004                . = ALIGN (0x4)
-                0x20000004                _ebss = .
-                0x20000004                PROVIDE (end, _ebss)
-                0x20000004                PROVIDE (_end, _ebss)
+ *fill*         0x20000005        0x3 00
+ COMMON         0x20000008        0x4 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
+                0x20000008                ptrCircle_API
+                0x2000000c                . = ALIGN (0x4)
+                0x2000000c                _ebss = .
+                0x2000000c                PROVIDE (end, _ebss)
+                0x2000000c                PROVIDE (_end, _ebss)
 
-._usrstack      0x20000004      0x100 load address 0x080064f8
-                0x20000004                . = ALIGN (0x4)
-                0x20000004                _susrstack = .
-                0x20000104                . = (. + _Minimum_Stack_Size)
- *fill*         0x20000004      0x100 00
-                0x20000104                . = ALIGN (0x4)
-                0x20000104                _eusrstack = .
+._usrstack      0x2000000c      0x100 load address 0x08006878
+                0x2000000c                . = ALIGN (0x4)
+                0x2000000c                _susrstack = .
+                0x2000010c                . = (. + _Minimum_Stack_Size)
+ *fill*         0x2000000c      0x100 00
+                0x2000010c                . = ALIGN (0x4)
+                0x2000010c                _eusrstack = .
 
 .b1text         0x08000000        0x4
  FILL mask 0xffffffff
@@ -299,16 +332,19 @@ END GROUP
  .ARM.attributes
                 0x00000000       0x31 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
  .ARM.attributes
-                0x00000031       0x31 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
+                0x00000031       0x31 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
  .ARM.attributes
-                0x00000062       0x31 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+                0x00000062       0x31 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .ARM.attributes
+                0x00000093       0x31 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 
 .comment        0x00000000       0x61
  *(.comment)
  .comment       0x00000000       0x37 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
- .comment       0x00000037       0x2a C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
+ .comment       0x00000037       0x2a C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
                                  0x2b (size before relaxing)
- .comment       0x00000000       0x2b C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+ .comment       0x00000000       0x2b C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .comment       0x00000000       0x2b C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 
 .debug
  *(.debug)
@@ -322,52 +358,63 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000       0x58
+.debug_aranges  0x00000000       0xb8
  *(.debug_aranges)
  .debug_aranges
-                0x00000000       0x30 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
+                0x00000000       0x30 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
  .debug_aranges
-                0x00000030       0x28 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+                0x00000030       0x48 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_aranges
+                0x00000078       0x40 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 
 .debug_pubnames
-                0x00000000       0x80
+                0x00000000      0x195
  *(.debug_pubnames)
  .debug_pubnames
-                0x00000000       0x53 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
+                0x00000000       0x53 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
  .debug_pubnames
-                0x00000053       0x2d C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+                0x00000053       0xbb C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_pubnames
+                0x0000010e       0x87 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 
-.debug_info     0x00000000      0x3fb
+.debug_info     0x00000000      0x6cc
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000      0x29e C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
- .debug_info    0x0000029e      0x15d C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+ .debug_info    0x00000000      0x2c9 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .debug_info    0x000002c9      0x20d C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_info    0x000004d6      0x1f6 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 
-.debug_abbrev   0x00000000      0x204
+.debug_abbrev   0x00000000      0x306
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x13b C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
- .debug_abbrev  0x0000013b       0xc9 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+ .debug_abbrev  0x00000000      0x14a C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .debug_abbrev  0x0000014a       0xdc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_abbrev  0x00000226       0xe0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 
-.debug_line     0x00000000      0x329
+.debug_line     0x00000000      0x54a
  *(.debug_line)
- .debug_line    0x00000000      0x1bd C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
- .debug_line    0x000001bd      0x16c C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+ .debug_line    0x00000000      0x1ac C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .debug_line    0x000001ac      0x1b0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_line    0x0000035c      0x1ee C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 
-.debug_frame    0x00000000       0xb4
+.debug_frame    0x00000000      0x1c4
  *(.debug_frame)
- .debug_frame   0x00000000       0x68 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
- .debug_frame   0x00000068       0x4c C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+ .debug_frame   0x00000000       0x68 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .debug_frame   0x00000068       0xc8 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_frame   0x00000130       0x94 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 
-.debug_str      0x00000000      0x2ea
+.debug_str      0x00000000      0x4ac
  *(.debug_str)
- .debug_str     0x00000000      0x27e C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
-                                0x2b7 (size before relaxing)
- .debug_str     0x0000027e       0x6c C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
-                                0x12d (size before relaxing)
+ .debug_str     0x00000000      0x29e C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                                0x2d7 (size before relaxing)
+ .debug_str     0x0000029e       0xe3 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                                0x1a4 (size before relaxing)
+ .debug_str     0x00000381      0x12b C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                                0x1e7 (size before relaxing)
 
-.debug_loc      0x00000000       0xf4
+.debug_loc      0x00000000      0x2b0
  *(.debug_loc)
- .debug_loc     0x00000000       0x90 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
- .debug_loc     0x00000090       0x64 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+ .debug_loc     0x00000000       0x90 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .debug_loc     0x00000090      0x138 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_loc     0x000001c8       0xe8 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -387,15 +434,18 @@ START GROUP
 LOAD c:/program files (x86)/raisonance/ride/arm-gcc/bin/../lib/gcc/arm-none-eabi/4.5.1/thumb2\libgcc.a
 LOAD c:/program files (x86)/raisonance/ride/arm-gcc/bin/../lib/gcc/arm-none-eabi/4.5.1/../../../../arm-none-eabi/lib/thumb2\libc.a
 END GROUP
-OUTPUT(C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\PrimerWare.elf elf32-littlearm)
+OUTPUT(C:\Users\John Preston\code\primer\PrimerWare\objdebug\PrimerWare.elf elf32-littlearm)
 
 .debug_pubtypes
-                0x00000000       0xf7
+                0x00000000      0x189
  .debug_pubtypes
-                0x00000000       0x9d C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
+                0x00000000       0xa8 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
  .debug_pubtypes
-                0x0000009d       0x5a C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+                0x000000a8       0x6b C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_pubtypes
+                0x00000113       0x76 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
 
-.debug_ranges   0x00000000       0x38
- .debug_ranges  0x00000000       0x20 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\Application.o
- .debug_ranges  0x00000020       0x18 C:\Users\John Preston\Dropbox\ELEC1034 Mobile Systems\PrimerWare\objdebug\MenuDraw.o
+.debug_ranges   0x00000000       0x88
+ .debug_ranges  0x00000000       0x20 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .debug_ranges  0x00000020       0x38 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_ranges  0x00000058       0x30 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
