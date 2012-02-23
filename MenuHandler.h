@@ -5,6 +5,7 @@ enum MenuCode {
 	MenuCode_SinglePlayer = 0,
 	MenuCode_TwoPlayerCoOp = 1,
 	MenuCode_TwoPlayerVs = 2,
+	MenuCode_Nothing = 3
 };
 
 enum MenuCode MENUHANDLER_run(void);

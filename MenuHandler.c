@@ -35,8 +35,8 @@ enum MenuCode MENUHANDLER_run(void) {
 			xPos <= MENUDRAW_BOXES_XCOORD + MENUDRAW_BOXES_WIDTH &&
 			yPos >= MENUDRAW_TOPBOX_YCOORD &&
 			yPos <= MENUDRAW_TOPBOX_YCOORD + MENUDRAW_BOXES_HEIGHT) {
-			if (playersMenu) MENUHANDLER_SinglePlayer();
-			else MENUHANDLER_CoOp();
+			if (playersMenu) return MenuCode_SinglePlayer;
+			else return MenuCode_TwoPlayerCoOp;
 		// Bottom button pressed.
 		} else if (xPos >= MENUDRAW_BOXES_XCOORD &&
 				   xPos <= MENUDRAW_BOXES_XCOORD + MENUDRAW_BOXES_WIDTH &&
@@ -45,10 +45,12 @@ enum MenuCode MENUHANDLER_run(void) {
 			if (playersMenu) {
 				playersMenu = 0;
 				MENUHANDLER_MultiPlayer();
-			} else { MENUHANDLER_Vs();
+			} else { return MenuCode_TwoPlayerVs;
 			}
 		}
 	}
+	
+	return MenuCode_Nothing;
 }
 
 void MENUHANDLER_SinglePlayer(void) { }
