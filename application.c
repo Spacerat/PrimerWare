@@ -65,28 +65,8 @@ enum MENU_code Application_Handler(void)
     // This routine will get called repeatedly by CircleOS, until we
     // return MENU_LEAVE
 
-    // TODO: Write your application handling here.
-#if 0	
-    static int cnt = 0;
-    DRAW_SetCharMagniCoeff(2);
-    DRAW_SetTextColor(RGB_BLUE);
-    DRAW_SetBGndColor(RGB_WHITE);
-    if ((cnt % 2) == 0)
-        {
-        DRAW_DisplayStringWithMode( 0, 90, "Hello", ALL_SCREEN, INVERTED_TEXT, CENTER);
-        DRAW_DisplayStringWithMode( 0, 60, "world !", ALL_SCREEN, INVERTED_TEXT, CENTER);
-        }
-    else
-        {
-        DRAW_DisplayStringWithMode( 0, 90, "", ALL_SCREEN, INVERTED_TEXT, CENTER);
-        DRAW_DisplayStringWithMode( 0, 60, "", ALL_SCREEN, INVERTED_TEXT, CENTER);
-        }
-    DRAW_SetCharMagniCoeff(1);
-    DRAW_SetDefaultColor();
-    cnt++;
-#endif
-
-		MENUHANDLER_run();
+	// Run the menu handler.
+	MENUHANDLER_run();
 		
     // If the button is pressed, the application is exited
     if (BUTTON_GetState() == BUTTON_PUSHED)

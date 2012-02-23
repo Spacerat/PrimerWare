@@ -31,17 +31,17 @@ enum MenuCode MENUHANDLER_run(void) {
           u8  yPos = (u8)(uStylusPos>>8);
           	
 		// Top button pressed.
-		if (xPos >= 16 &&
-			xPos <= 93 + 16 &&
-			yPos >= 60 &&
-			yPos <= 20 + 60) {
+		if (xPos >= MENUDRAW_BOXES_XCOORD &&
+			xPos <= MENUDRAW_BOXES_XCOORD + MENUDRAW_BOXES_WIDTH &&
+			yPos >= MENUDRAW_TOPBOX_YCOORD &&
+			yPos <= MENUDRAW_TOPBOX_YCOORD + MENUDRAW_BOXES_HEIGHT) {
 			if (playersMenu) MENUHANDLER_SinglePlayer();
 			else MENUHANDLER_CoOp();
 		// Bottom button pressed.
-		} else if (xPos >= 16 &&
-				   xPos <= 93 + 16 &&
-				   yPos >= 30 &&
-				   yPos <= 20 + 30) {
+		} else if (xPos >= MENUDRAW_BOXES_XCOORD &&
+				   xPos <= MENUDRAW_BOXES_XCOORD + MENUDRAW_BOXES_WIDTH &&
+				   yPos >= MENUDRAW_BTMBOX_YCOORD &&
+				   yPos <= MENUDRAW_BTMBOX_YCOORD + MENUDRAW_BOXES_HEIGHT) {
 			if (playersMenu) {
 				playersMenu = 0;
 				MENUHANDLER_MultiPlayer();
