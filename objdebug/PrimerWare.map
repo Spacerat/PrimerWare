@@ -165,7 +165,7 @@ END GROUP
  *(.flashtext)
                 0x08006010                . = ALIGN (0x4)
 
-.text           0x08006010      0xdcc
+.text           0x08006010      0xdb8
                 0x08006010                . = ALIGN (0x4)
  *(.text)
  .text          0x08006010        0x0 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
@@ -179,83 +179,83 @@ END GROUP
  .text.Application_Entry
                 0x080061ec       0x50 C:\Program Files (x86)\Raisonance\Ride\Lib\ARM\CircleOS\Application_Startup.o
  .text.Application_Ini
-                0x0800623c       0x90 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                0x0800623c       0x7c C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
                 0x0800623c                Application_Ini
  .text.Application_Handler
-                0x080062cc      0x204 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
-                0x080062cc                Application_Handler
+                0x080062b8      0x204 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                0x080062b8                Application_Handler
  .text.MsgVersion
-                0x080064d0      0x13c C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                0x080064bc      0x13c C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
  .text.testRun1
-                0x0800660c       0xa8 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
-                0x0800660c                testRun1
+                0x080065f8       0xa8 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                0x080065f8                testRun1
  .text.testRun2
-                0x080066b4       0xa8 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
-                0x080066b4                testRun2
+                0x080066a0       0xa8 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                0x080066a0                testRun2
  .text.testRun3
-                0x0800675c       0xa8 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
-                0x0800675c                testRun3
+                0x08006748       0xa8 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                0x08006748                testRun3
  .text.MENUDRAW_setupDrawing
-                0x08006804       0x44 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
-                0x08006804                MENUDRAW_setupDrawing
+                0x080067f0       0x44 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x080067f0                MENUDRAW_setupDrawing
  .text.MENUDRAW_drawMenu
-                0x08006848       0x14 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
-                0x08006848                MENUDRAW_drawMenu
+                0x08006834       0x14 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x08006834                MENUDRAW_drawMenu
  .text.MENUDRAW_drawTitle
-                0x0800685c       0x44 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
-                0x0800685c                MENUDRAW_drawTitle
+                0x08006848       0x44 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x08006848                MENUDRAW_drawTitle
  .text.MENUDRAW_drawPlayersMenu
-                0x080068a0       0xcc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
-                0x080068a0                MENUDRAW_drawPlayersMenu
+                0x0800688c       0xcc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x0800688c                MENUDRAW_drawPlayersMenu
  .text.MENUDRAW_clearButtonAreas
-                0x0800696c       0x60 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
-                0x0800696c                MENUDRAW_clearButtonAreas
+                0x08006958       0x60 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x08006958                MENUDRAW_clearButtonAreas
  .text.MENUDRAW_drawTwoPlayerGameTypeMenu
-                0x080069cc       0xcc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
-                0x080069cc                MENUDRAW_drawTwoPlayerGameTypeMenu
+                0x080069b8       0xcc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+                0x080069b8                MENUDRAW_drawTwoPlayerGameTypeMenu
  .text.MENUHANDLER_run
-                0x08006a98       0xe0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
-                0x08006a98                MENUHANDLER_run
+                0x08006a84       0xe0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                0x08006a84                MENUHANDLER_run
  .text.MENUHANDLER_SinglePlayer
-                0x08006b78        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
-                0x08006b78                MENUHANDLER_SinglePlayer
+                0x08006b64        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                0x08006b64                MENUHANDLER_SinglePlayer
  .text.MENUHANDLER_MultiPlayer
-                0x08006b84        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
-                0x08006b84                MENUHANDLER_MultiPlayer
+                0x08006b70        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                0x08006b70                MENUHANDLER_MultiPlayer
  .text.MENUHANDLER_CoOp
-                0x08006b90        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
-                0x08006b90                MENUHANDLER_CoOp
+                0x08006b7c        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                0x08006b7c                MENUHANDLER_CoOp
  .text.MENUHANDLER_Vs
-                0x08006b9c        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
-                0x08006b9c                MENUHANDLER_Vs
+                0x08006b88        0xc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+                0x08006b88                MENUHANDLER_Vs
  .text.init_rand
-                0x08006ba8       0xb4 C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
-                0x08006ba8                init_rand
+                0x08006b94       0xb4 C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
+                0x08006b94                init_rand
  .text.rand_cmwc
-                0x08006c5c       0xe0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
-                0x08006c5c                rand_cmwc
+                0x08006c48       0xe0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
+                0x08006c48                rand_cmwc
  *(.rodata)
- .rodata        0x08006d3c       0x68 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
-                0x08006d3c                Application_Name
-                0x08006d48                numGames
-                0x08006d4c                minigames
- .rodata        0x08006da4       0x38 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .rodata        0x08006d28       0x68 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                0x08006d28                Application_Name
+                0x08006d34                numGames
+                0x08006d38                minigames
+ .rodata        0x08006d90       0x38 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
  *(.rodata*)
  *(.glue_7)
  .glue_7        0x00000000        0x0 linker stubs
  *(.glue_7t)
  .glue_7t       0x00000000        0x0 linker stubs
-                0x08006ddc                . = ALIGN (0x4)
-                0x08006ddc                _etext = .
-                0x08006ddc                _sidata = _etext
+                0x08006dc8                . = ALIGN (0x4)
+                0x08006dc8                _etext = .
+                0x08006dc8                _sidata = _etext
 
-.vfp11_veneer   0x08006ddc        0x0
+.vfp11_veneer   0x08006dc8        0x0
  .vfp11_veneer  0x00000000        0x0 linker stubs
 
-.v4_bx          0x08006ddc        0x0
+.v4_bx          0x08006dc8        0x0
  .v4_bx         0x00000000        0x0 linker stubs
 
-.data           0x20000000       0x14 load address 0x08006ddc
+.data           0x20000000       0x14 load address 0x08006dc8
                 0x20000000                . = ALIGN (0x4)
                 0x20000000                _sdata = .
  *(.data)
@@ -271,7 +271,7 @@ END GROUP
                 0x20000014                _edata = .
                 0x00000000                toobig = (((_sidata + _edata) - _sdata) > _eflash)?!!!!!!!!! FLASH IS FULL !!!!!!!!!:0x0
 
-.bss            0x20000014     0x1038 load address 0x08006df0
+.bss            0x20000014     0x1038 load address 0x08006ddc
                 0x20000014                . = ALIGN (0x4)
                 0x20000014                _sbss = .
  *(.bss)
@@ -290,7 +290,7 @@ END GROUP
                 0x2000104c                PROVIDE (end, _ebss)
                 0x2000104c                PROVIDE (_end, _ebss)
 
-._usrstack      0x2000104c      0x100 load address 0x08007e28
+._usrstack      0x2000104c      0x100 load address 0x08007e14
                 0x2000104c                . = ALIGN (0x4)
                 0x2000104c                _susrstack = .
                 0x2000114c                . = (. + _Minimum_Stack_Size)
@@ -405,12 +405,12 @@ END GROUP
  .debug_pubnames
                 0x000001d7       0x2e C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
 
-.debug_info     0x00000000      0xa17
+.debug_info     0x00000000      0xa02
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000      0x557 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
- .debug_info    0x00000557      0x1d2 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
- .debug_info    0x00000729      0x1fc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
- .debug_info    0x00000925       0xf2 C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
+ .debug_info    0x00000000      0x542 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .debug_info    0x00000542      0x1d2 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_info    0x00000714      0x1fc C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+ .debug_info    0x00000910       0xf2 C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
 
 .debug_abbrev   0x00000000      0x37a
  *(.debug_abbrev)
@@ -419,12 +419,12 @@ END GROUP
  .debug_abbrev  0x00000210       0xe0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
  .debug_abbrev  0x000002f0       0x8a C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
 
-.debug_line     0x00000000      0x6c2
+.debug_line     0x00000000      0x6b3
  *(.debug_line)
- .debug_line    0x00000000      0x28a C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
- .debug_line    0x0000028a      0x1b1 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
- .debug_line    0x0000043b      0x1ee C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
- .debug_line    0x00000629       0x99 C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
+ .debug_line    0x00000000      0x27b C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+ .debug_line    0x0000027b      0x1b1 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_line    0x0000042c      0x1ee C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+ .debug_line    0x0000061a       0x99 C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
 
 .debug_frame    0x00000000      0x27c
  *(.debug_frame)
@@ -433,15 +433,15 @@ END GROUP
  .debug_frame   0x000001a0       0x94 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
  .debug_frame   0x00000234       0x48 C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
 
-.debug_str      0x00000000      0x5fb
+.debug_str      0x00000000      0x5e6
  *(.debug_str)
- .debug_str     0x00000000      0x40b C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
-                                0x449 (size before relaxing)
- .debug_str     0x0000040b       0xd6 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
+ .debug_str     0x00000000      0x3f6 C:\Users\John Preston\code\primer\PrimerWare\objdebug\Application.o
+                                0x434 (size before relaxing)
+ .debug_str     0x000003f6       0xd6 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuDraw.o
                                 0x1a4 (size before relaxing)
- .debug_str     0x000004e1       0xd0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
+ .debug_str     0x000004cc       0xd0 C:\Users\John Preston\code\primer\PrimerWare\objdebug\MenuHandler.o
                                 0x1f8 (size before relaxing)
- .debug_str     0x000005b1       0x4a C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
+ .debug_str     0x0000059c       0x4a C:\Users\John Preston\code\primer\PrimerWare\objdebug\RandNo.o
                                  0x63 (size before relaxing)
 
 .debug_loc      0x00000000      0x3d4

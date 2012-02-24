@@ -47,7 +47,7 @@ enum MENU_code Application_Ini(void) {
     // This application manages all the screen. 
     // If you don't reset the offset on EvoPrimer, the screen will be reduced
     // to 128x128 pixels for Primer2 compatibility
-    LCD_SetOffset(OFFSET_OFF);
+    //LCD_SetOffset(OFFSET_OFF);
 	
 	// Disable screen rotation.
 	LCD_SetRotateScreen(0);
@@ -102,7 +102,7 @@ enum MENU_code Application_Handler(void)
 				DRAW_DisplayStringWithMode(0,
 										   0,
 										   "Multiplayah!",
-										   ALL_SCREEN, 1, 1);
+										   ALL_SCREEN, 0, 1);
 			}
 			
 			// TODO: Display start notification.
@@ -185,7 +185,7 @@ struct GameStatus testRun1(void) {
 	DRAW_DisplayStringWithMode(0,
 							   10,
 							   "Test 1",
-							   ALL_SCREEN, 1, 1);
+							   ALL_SCREEN, 0, 1);
 	
 	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
 		
@@ -201,7 +201,7 @@ struct GameStatus testRun2(void) {
 	DRAW_DisplayStringWithMode(0,
 							   10,
 							   "Test 2",
-							   ALL_SCREEN, 1, 1);
+							   ALL_SCREEN, 0, 1);
 	
 	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
 		
@@ -217,7 +217,7 @@ struct GameStatus testRun3(void) {
 	DRAW_DisplayStringWithMode(0,
 							   10,
 							   "Test 3",
-							   ALL_SCREEN, 1, 1);
+							   ALL_SCREEN, 0, 1);
 	
 	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
 		
