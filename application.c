@@ -11,6 +11,7 @@
 #include "Application.h"
 #include "MenuHandler.h"
 #include "RandNo.h"
+#include "GameDraw.h"
 
 /* Private defines -----------------------------------------------------------*/
 
@@ -57,7 +58,7 @@ enum MENU_code Application_Ini(void) {
     MENU_SetAppliDivider(10);
 	
 	// Run the MenuHandler.
-	MENUHANDLER_run();
+	//MENUHANDLER_run();
 
     return MENU_CONTINUE_COMMAND;
     }
@@ -78,11 +79,13 @@ enum MENU_code Application_Handler(void)
 	static bool atMenu = 1; // Are we supposed to be at the menu?
 	static const int sessionLength = 3; // Number of games per session.
 	static gameRunFunction minigameArray[3]; // Array of pointers to
-														 // minigame run functions.
-	static int currentMinigame = 0; // Index in the array of the current pointer.
+											 // minigame run functions.
+	static int currentMinigame = 0; // Index in the array of the current 
+									// pointer.
 	static int score = 0; // Current total score.
 	static int lives = 3; // Number of lives remaining.
 	static int amServer = 0; // Am I the server (multiplayer only of course)?
+		
 		
 	if (atMenu) {
 		enum MenuCode menuCode = MENUHANDLER_run(); // Handle menu and get code.
@@ -111,6 +114,16 @@ enum MENU_code Application_Handler(void)
 			atMenu = 0;
 		}
 	} else {
+		// Display the stage screen if we're about to start the game.
+		static int counter = 0; // Counter for timing.
+		if (counter == 0) {
+			GAMEDRAW_stageN(currentMinigame + 1);
+		}
+		if (counter < 200) {
+			counter++;
+			return MENU_CONTINUE;
+		}
+		
 		// Run the current game and get its status.
 		struct GameStatus gameStatus = minigameArray[currentMinigame]();
 			
@@ -118,9 +131,11 @@ enum MENU_code Application_Handler(void)
 		if (gameStatus.code == gameStatus_Success) {
 			score += gameStatus.score;
 			currentMinigame++;
+			counter = 0;
 		} else if (gameStatus.code == gameStatus_Fail) {
 			lives--;
 			currentMinigame++;
+			counter = 0;
 		}
 		
 		// If you die or finish, display stuff then exit.
@@ -183,9 +198,22 @@ struct GameStatus testRun1(void) {
 	
 	DRAW_Clear();
 	DRAW_DisplayStringWithMode(0,
-							   10,
+							   25,
 							   "Test 1",
 							   ALL_SCREEN, 0, 1);
+	
+	// TIMING CODE!
+	static int count = 0;
+	char countString[8];
+	
+	UTIL_int2str(countString, count, 8, 1);
+	DRAW_DisplayStringWithMode(0,
+							   10,
+							   countString,
+							   ALL_SCREEN, 0, 1);
+	
+	count++;
+	// END TIMING CODE!
 	
 	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
 		
@@ -199,9 +227,22 @@ struct GameStatus testRun2(void) {
 	
 	DRAW_Clear();
 	DRAW_DisplayStringWithMode(0,
-							   10,
+							   25,
 							   "Test 2",
 							   ALL_SCREEN, 0, 1);
+	
+	// TIMING CODE!
+	static int count = 0;
+	char countString[8];
+	
+	UTIL_int2str(countString, count, 8, 1);
+	DRAW_DisplayStringWithMode(0,
+							   10,
+							   countString,
+							   ALL_SCREEN, 0, 1);
+	
+	count++;
+	// END TIMING CODE!
 	
 	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
 		
@@ -215,9 +256,22 @@ struct GameStatus testRun3(void) {
 	
 	DRAW_Clear();
 	DRAW_DisplayStringWithMode(0,
-							   10,
+							   25,
 							   "Test 3",
 							   ALL_SCREEN, 0, 1);
+	
+	// TIMING CODE!
+	static int count = 0;
+	char countString[8];
+	
+	UTIL_int2str(countString, count, 8, 1);
+	DRAW_DisplayStringWithMode(0,
+							   10,
+							   countString,
+							   ALL_SCREEN, 0, 1);
+	
+	count++;
+	// END TIMING CODE!
 	
 	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
 		

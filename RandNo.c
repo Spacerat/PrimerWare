@@ -6,14 +6,14 @@
 *******************************************************************************/
 #define PHI 0x9e3779b9
 
-static int Q[1024], c = 65535;
+static int Q[32], c = 65535;
  
 void init_rand(int x) {
 	int i;
 	Q[0] = x;
 	Q[1] = x + PHI;
 	Q[2] = x + PHI + PHI;
-	for (i = 3; i < 1024; i++)
+	for (i = 3; i < 32; i++)
 		Q[i] = Q[i - 3] ^ Q[i - 2] ^ PHI ^ i;
 }
 

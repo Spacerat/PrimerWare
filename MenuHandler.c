@@ -35,6 +35,9 @@ enum MenuCode MENUHANDLER_run(void) {
 			xPos <= MENUDRAW_BOXES_XCOORD + MENUDRAW_BOXES_WIDTH &&
 			yPos >= MENUDRAW_TOPBOX_YCOORD &&
 			yPos <= MENUDRAW_TOPBOX_YCOORD + MENUDRAW_BOXES_HEIGHT) {
+			
+			menuDrawn = 0;	
+			
 			if (playersMenu) return MenuCode_SinglePlayer;
 			else return MenuCode_TwoPlayerCoOp;
 		// Bottom button pressed.
@@ -45,7 +48,9 @@ enum MenuCode MENUHANDLER_run(void) {
 			if (playersMenu) {
 				playersMenu = 0;
 				MENUHANDLER_MultiPlayer();
-			} else { return MenuCode_TwoPlayerVs;
+			} else {
+				menuDrawn = 0;
+				return MenuCode_TwoPlayerVs;
 			}
 		}
 	}
