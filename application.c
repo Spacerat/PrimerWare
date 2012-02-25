@@ -12,6 +12,9 @@
 #include "MenuHandler.h"
 #include "RandNo.h"
 #include "GameDraw.h"
+#include "Timer.h"
+#include "GameHandler.h"
+#include "GamesList.h"
 
 /* Private defines -----------------------------------------------------------*/
 
@@ -23,14 +26,7 @@
 static enum MENU_code MsgVersion(void);
 
 /* Public variables ----------------------------------------------------------*/
-const char Application_Name[8+1] = {"Pri.War."};      // Max 8 characters
-const int numGames = 3; // Number of games.
-
-/* Game function shizzles ----------------------------------------------------*/
-struct GameStatus testRun1(void);
-struct GameStatus testRun2(void);
-struct GameStatus testRun3(void);
-const gameRunFunction minigames[] = { testRun1, testRun2, testRun3 };
+const char Application_Name[8+1] = {"Pri.War."};      // Max 8 characters											  
 
 /*******************************************************************************
 * Function Name  : Application_Ini
@@ -56,9 +52,6 @@ enum MENU_code Application_Ini(void) {
     // Set speed.
 	UTIL_SetPll(SPEED_VERY_HIGH);
     MENU_SetAppliDivider(10);
-	
-	// Run the MenuHandler.
-	//MENUHANDLER_run();
 
     return MENU_CONTINUE_COMMAND;
     }
@@ -76,73 +69,113 @@ enum MENU_code Application_Handler(void)
     // return MENU_LEAVE
 
 	// State for the game handler.
-	static bool atMenu = 1; // Are we supposed to be at the menu?
-	static const int sessionLength = 3; // Number of games per session.
-	static gameRunFunction minigameArray[3]; // Array of pointers to
-											 // minigame run functions.
+	static enum CurrentDisplay screen; // Where are we?!
+	static gameRunFunction minigameArray[ROUNDLENGTH]; // Holds current 
+													   // minigames.
 	static int currentMinigame = 0; // Index in the array of the current 
 									// pointer.
 	static int score = 0; // Current total score.
 	static int lives = 3; // Number of lives remaining.
 	static int amServer = 0; // Am I the server (multiplayer only of course)?
+	const unsigned int stageScreenTimerValue = 200; // Timer value for stage
+													// screens.
+	
+	// Make sure the timers count up!
+	TIMER_tickTimers();
 		
-		
-	if (atMenu) {
+	if (screen == display_Menu) {
 		enum MenuCode menuCode = MENUHANDLER_run(); // Handle menu and get code.
 		
 		// If we have chosen a game type...
 		if (menuCode != MenuCode_Nothing) {			
-			// Initialise the array of games.
+			// Pupulate minigame array.
 			init_rand(123);
 			
+			gameRunFunction* theMinigames;
+			if (menuCode == MenuCode_SinglePlayer)
+				theMinigames = minigamesSinglePlayer;
+			else if (menuCode == MenuCode_TwoPlayerCoOp)
+				theMinigames = minigamesCoOp;
+			else
+				theMinigames = minigamesVs;
+			
 			int i = 0;
-			for (i = 0; i < sessionLength; i++)
-				minigameArray[i] = minigames[rand_cmwc() % numGames];
+			for (i = 0; i < ROUNDLENGTH; i++)
+				minigameArray[i] = theMinigames[rand_cmwc() % ROUNDLENGTH];
 			
 			// If a multiplayer game was started, set up the multiplayer.
 			if (menuCode != MenuCode_SinglePlayer) {
-				// TODO: Implement multiplayer handling.
+				// TODO: Multiplayer init code.
 				DRAW_DisplayStringWithMode(0,
 										   0,
 										   "Multiplayah!",
 										   ALL_SCREEN, 0, 1);
 			}
 			
-			// TODO: Display start notification.
-			
 			// Change from menu mode to game mode.
-			atMenu = 0;
-		}
-	} else {
-		// Display the stage screen if we're about to start the game.
-		static int counter = 0; // Counter for timing.
-		if (counter == 0) {
-			GAMEDRAW_stageN(currentMinigame + 1);
-		}
-		if (counter < 200) {
-			counter++;
-			return MENU_CONTINUE;
+			screen = display_StageStart;
 		}
 		
+	} else if (screen == display_StageStart) {
+		if (!TIMER_isEnabled(0)) {
+			TIMER_initTimer(0, stageScreenTimerValue);
+			GAMEDRAW_stageN(currentMinigame + 1);
+		}
+		
+		if (TIMER_checkTimer(0)) {
+			TIMER_disableTimer(0);
+			screen = display_Game;
+		}
+	} else if (screen == display_Game) {
 		// Run the current game and get its status.
 		struct GameStatus gameStatus = minigameArray[currentMinigame]();
 			
-		// Handle game results.
-		if (gameStatus.code == gameStatus_Success) {
-			score += gameStatus.score;
+		// If the game has finished...
+		if (gameStatus.code != gameStatus_InProgress) {
 			currentMinigame++;
-			counter = 0;
-		} else if (gameStatus.code == gameStatus_Fail) {
-			lives--;
-			currentMinigame++;
-			counter = 0;
+			
+			if (gameStatus.code == gameStatus_Success) {
+				score += gameStatus.score;
+				screen = display_StageSuccess;
+			} else {
+				lives--;
+				screen = display_StageFail;
+			}
+			
+			// Check if we need to end.
+			if (lives == 0 || currentMinigame == ROUNDLENGTH)
+				screen = display_RoundFinish;
+		}
+	} else if (screen == display_StageSuccess) {
+		if (!TIMER_isEnabled(0)) {
+			TIMER_initTimer(0, stageScreenTimerValue);
+			GAMEDRAW_stageSuccess();
 		}
 		
-		// If you die or finish, display stuff then exit.
-		if (lives == 0 || currentMinigame == sessionLength) {
-			// TODO: Display score, etc.
-			
-			atMenu = 1;
+		if (TIMER_checkTimer(0)) {
+			TIMER_disableTimer(0);
+			screen = display_StageStart;
+		}
+	} else if (screen == display_StageFail) {
+		if (!TIMER_isEnabled(0)) {
+			TIMER_initTimer(0, stageScreenTimerValue);
+			GAMEDRAW_stageFail();
+		}
+		
+		if (TIMER_checkTimer(0)) {
+			TIMER_disableTimer(0);
+			screen = display_StageStart;
+		}
+	} else if (screen == display_RoundFinish) {
+		static bool screenDrawn = 0;
+		
+		if (!screenDrawn) {
+			GAMEDRAW_roundFinished(score, lives);
+			screenDrawn = 1;
+		}
+		
+		if (TOUCHSCR_IsPressed()) {
+			screen = display_Menu;
 			lives = 3;
 			score = 0;
 			currentMinigame = 0;
@@ -150,14 +183,13 @@ enum MENU_code Application_Handler(void)
 	}
 		
     // If the button is pressed, the application is exited
-    if (BUTTON_GetState() == BUTTON_PUSHED)
-        {
+    if (BUTTON_GetState() == BUTTON_PUSHED) {
         BUTTON_WaitForRelease();
         return MENU_Quit();
-        }
+    }
 
     return MENU_CONTINUE;   // Returning MENU_LEAVE will quit to CircleOS
-    }
+}
 
 /*******************************************************************************
 * Function Name  : MsgVersion
@@ -188,92 +220,3 @@ static enum MENU_code MsgVersion(void)
     DRAW_Clear();
     return MENU_REFRESH;
     }
-
-// ----------------------- TEST SHIZZLE!!! -----------------------	
-	
-struct GameStatus testRun1(void) {
-	static struct GameStatus status;
-	status.code = gameStatus_InProgress;
-	status.score = 0;
-	
-	DRAW_Clear();
-	DRAW_DisplayStringWithMode(0,
-							   25,
-							   "Test 1",
-							   ALL_SCREEN, 0, 1);
-	
-	// TIMING CODE!
-	static int count = 0;
-	char countString[8];
-	
-	UTIL_int2str(countString, count, 8, 1);
-	DRAW_DisplayStringWithMode(0,
-							   10,
-							   countString,
-							   ALL_SCREEN, 0, 1);
-	
-	count++;
-	// END TIMING CODE!
-	
-	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
-		
-	return status;
-}
-
-struct GameStatus testRun2(void) {
-	static struct GameStatus status;
-	status.code = gameStatus_InProgress;
-	status.score = 0;
-	
-	DRAW_Clear();
-	DRAW_DisplayStringWithMode(0,
-							   25,
-							   "Test 2",
-							   ALL_SCREEN, 0, 1);
-	
-	// TIMING CODE!
-	static int count = 0;
-	char countString[8];
-	
-	UTIL_int2str(countString, count, 8, 1);
-	DRAW_DisplayStringWithMode(0,
-							   10,
-							   countString,
-							   ALL_SCREEN, 0, 1);
-	
-	count++;
-	// END TIMING CODE!
-	
-	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
-		
-	return status;
-}
-
-struct GameStatus testRun3(void) {
-	static struct GameStatus status;
-	status.code = gameStatus_InProgress;
-	status.score = 0;
-	
-	DRAW_Clear();
-	DRAW_DisplayStringWithMode(0,
-							   25,
-							   "Test 3",
-							   ALL_SCREEN, 0, 1);
-	
-	// TIMING CODE!
-	static int count = 0;
-	char countString[8];
-	
-	UTIL_int2str(countString, count, 8, 1);
-	DRAW_DisplayStringWithMode(0,
-							   10,
-							   countString,
-							   ALL_SCREEN, 0, 1);
-	
-	count++;
-	// END TIMING CODE!
-	
-	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
-		
-	return status;
-}
