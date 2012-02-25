@@ -6,9 +6,10 @@
 *******************************************************************************/
 
 #include "circle_api.h"
-#include "MenuHandler.h"
 
+#include "MenuHandler.h"
 #include "MenuDraw.h"
+#include "Touchscreen.h"
 
 /*
  * Main menu call.
@@ -25,10 +26,12 @@ enum MenuCode MENUHANDLER_run(void) {
 	
 	// Check if the user has touched in the screen. If the touch was within a
 	// button, call the function for that button.
-	if (TOUCHSCR_IsPressed()) {
-		  u16 uStylusPos = TOUCHSCR_GetPos();
-          u8  xPos = (u8)uStylusPos;
-          u8  yPos = (u8)(uStylusPos>>8);
+	//struct TouchEvent touchEvent = TOUCH_clickEvent();
+	
+	if (TOUCHSCR_IsPressed() == 1) {
+		u16 pos = TOUCHSCR_GetPos();
+        u8  xPos = (u8)(pos);
+        u8  yPos = (u8)(pos>>8);
           	
 		// Top button pressed.
 		if (xPos >= MENUDRAW_BOXES_XCOORD &&
