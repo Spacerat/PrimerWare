@@ -30,6 +30,7 @@ static void minigame_tappy_draw() {
 							   ALL_SCREEN, 0, 1);
 }
 
+//Game logic
 static int minigame_tappy_logic() {
 	if (tappy_running == 0) {
 		//First run
