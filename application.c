@@ -70,6 +70,9 @@ enum MENU_code Application_Handler(void)
 
 	// State for the game handler.
 	static enum CurrentDisplay screen; // Where are we?!
+	
+	static struct GameData gamedata; //Things the minigames need to know (e.g. are we multiplayer?)
+	
 	static gameRunFunction minigameArray[ROUNDLENGTH]; // Holds current 
 													   // minigames.
 	static int currentMinigame = 0; // Index in the array of the current 
@@ -92,12 +95,18 @@ enum MENU_code Application_Handler(void)
 			init_rand(123);
 			
 			gameRunFunction* theMinigames;
-			if (menuCode == MenuCode_SinglePlayer)
+			if (menuCode == MenuCode_SinglePlayer) {
 				theMinigames = minigamesSinglePlayer;
-			else if (menuCode == MenuCode_TwoPlayerCoOp)
+				gamedata.mode = Game_SinglePlayer;
+			}
+			else if (menuCode == MenuCode_TwoPlayerCoOp) {
 				theMinigames = minigamesCoOp;
-			else
+				gamedata.mode = Game_CoOp;
+			}
+			else {
 				theMinigames = minigamesVs;
+				gamedata.mode = Game_Vs;
+			}
 			
 			int i = 0;
 			for (i = 0; i < ROUNDLENGTH; i++)
@@ -128,7 +137,8 @@ enum MENU_code Application_Handler(void)
 		}
 	} else if (screen == display_Game) {
 		// Run the current game and get its status.
-		struct GameStatus gameStatus = minigameArray[currentMinigame]();
+		
+		struct GameStatus gameStatus = minigameArray[currentMinigame](&gamedata);
 			
 		// If the game has finished...
 		if (gameStatus.code != gameStatus_InProgress) {
@@ -176,6 +186,7 @@ enum MENU_code Application_Handler(void)
 		
 		if (TOUCHSCR_IsPressed()) {
 			screen = display_Menu;
+			gamedata.mode = Game_None;
 			lives = 3;
 			score = 0;
 			currentMinigame = 0;

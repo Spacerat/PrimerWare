@@ -7,12 +7,25 @@ enum GameStatusCode {
 	gameStatus_Fail = 2
 };
 
+enum GameModeCode {
+	Game_SinglePlayer = 0
+	Game_CoOp = 1
+	Game_Vs = 2
+	Game_None = 3
+	
+};
+
 struct GameStatus {
 	enum GameStatusCode code;
 	int score;
 };
 
-typedef struct GameStatus (*gameRunFunction)(void);
+struct GameData {
+	enum GameModecode mode; // i.e. sp, coop, versus
+	u8 isHost;
+}
+
+typedef struct GameStatus (*gameRunFunction)(struct GameData * data);
 
 /* Constants -----------------------------------------------------------------*/
 #define NUMSINGLEGAMES 3 // Total number of single player games.
