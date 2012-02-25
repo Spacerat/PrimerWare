@@ -7,8 +7,6 @@
 *******************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
-
-
 #include "stm32f10x.h"
 #include "misc.h"
 #include "stm32f10x_conf.h"
@@ -16,7 +14,6 @@
 #include "stm32f10x_spi.h"
 #include "stm32f10x_rcc.h"
 #include "circle_api.h"
-
 /* Private defines -----------------------------------------------------------*/
 
 
@@ -33,7 +30,7 @@ SPI_InitTypeDef  SPI_InitStructure;
 
 /* Public variables ----------------------------------------------------------*/
 
-const char Application_Name[8+1] = {"EchoIrDA"};  // max 8 characters for application name
+const char Application_Name[8+1] = {"EchoSPI"};  // max 8 characters for application name
 
 enum MENU_code Application_Handler ( void );
 
@@ -115,9 +112,9 @@ enum {
 int vpos = init_vpos;
 int hpos = 0;
 int delay = send_delay;              // seems to work OK with no delay
-char send_string[]="Hello IRDA!";
+char send_string[]="Hello SPI! ";
 int send_offset = 0;
-const char greet_string[]=" * IrDA R/W * ";
+const char greet_string[]=" * SPI R/W * ";
 
 
 
@@ -181,7 +178,9 @@ enum MENU_code Application_Handler ( void ) {
 		if ( (send_string[send_offset] != '\0')
 		&& ((SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) != RESET))) {
 			if (delay ==0) {
-				SPI_I2S_SendData(SPI1,(u8)send_string[send_offset]);
+				u8 d = (u8)send_string[send_offset];
+				char c = (char) d;
+				SPI_I2S_SendData(SPI1, d);
 				send_offset++;
 				delay = send_delay;
 				} else {
