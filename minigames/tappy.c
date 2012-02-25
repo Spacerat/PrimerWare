@@ -3,6 +3,10 @@
 
 #define TAPPY_PLAYING
 
+#include "tappy.h"
+#include "../circle_api.h"
+#include "../GameHandler.h"
+
 static tappy_running;
 static tappy_taps;
 
@@ -35,7 +39,7 @@ static int minigame_tappy_logic() {
 		status.code = gameStatus_InProgress;
 	}
 	
-	if (tappy_taps > 50) {
+	if (tappy_taps > 25) {
 		return 1;
 	}
 	
@@ -44,20 +48,31 @@ static int minigame_tappy_logic() {
 	}
 }
 
-struct GameStatus minigame_tappy() {
+struct GameStatus minigame_tappy(struct GameData * data) {
+	int state = minigame_tappy_logic();
+	minigame_tappy_draw();
 	
-	// END TIMING CODE!
-	
-	switch (minigame_tappy_logic()) {
-		case TAPPY_FAIL:
-			status.code = gameStatus_Fail;
-		case TAPPY_WON:
-			status.code = gameStatus_Success;
-		case TAPPY_PLAYING:
-		default:
+	switch (data->mode) {
+		case Game_SinglePlayer:
+			switch (state) {
+				case TAPPY_FAIL:
+					status.code = gameStatus_Fail;
+				case TAPPY_WON:
+					status.code = gameStatus_Success;
+				case TAPPY_PLAYING:
+				default:
+					break;
+			}
 			break;
+		case Game_Vs:
+		case Game_CoOp:
+			//Unimplimented
+			status.code = gameStatus_Success;
+			break;
+		case default:
+			assert(0); //This should never happen.
 	}
-		
+
 	return status;
 }
 

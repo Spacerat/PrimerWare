@@ -5,11 +5,11 @@
 *
 *******************************************************************************/
 
-#include "circle_api.h"
+#include "../TestGames.h"
+#include "../circle_api.h"
+#include "../GameHandler.h"
 
-#include "GameHandler.h"
-
-struct GameStatus testRun1(void) {
+struct GameStatus testRun1(struct GameData * data) {
 	static struct GameStatus status;
 	status.code = gameStatus_InProgress;
 	status.score = 0;
@@ -38,7 +38,7 @@ struct GameStatus testRun1(void) {
 	return status;
 }
 
-struct GameStatus testRun2(void) {
+struct GameStatus testRun2(struct GameData * data) {
 	static struct GameStatus status;
 	status.code = gameStatus_InProgress;
 	status.score = 0;
@@ -67,7 +67,7 @@ struct GameStatus testRun2(void) {
 	return status;
 }
 
-struct GameStatus testRun3(void) {
+struct GameStatus testRun3(struct GameData * data) {
 	static struct GameStatus status;
 	status.code = gameStatus_InProgress;
 	status.score = 0;
