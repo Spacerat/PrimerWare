@@ -10,3 +10,6 @@
 *.bat
 *.lst
 *~
+
+*stm32f10x*
+circle_api.h
