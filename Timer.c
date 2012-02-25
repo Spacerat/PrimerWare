@@ -8,6 +8,7 @@
 #include "circle_api.h"
 
 #define TIMER_NOTIMERS 10
+#define TIME_SECOND 300
 
 static unsigned int timers[TIMER_NOTIMERS]; // Array of ints to hold timer values.
 // Is the timer enabled?
