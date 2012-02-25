@@ -7,6 +7,7 @@
 #define PACKET_BEGIN 0xFF
 
 
+
 void assert_failed(u8* file, u32 line) {}  // Required by libraries. WE don't bother to handle it.
 
 tHandler OldHandler; // I have no idea what this is for
@@ -15,7 +16,9 @@ CircularBuffer TXbuffer;
 u8 RXbuffer[PACKET_MAX_SIZE + 1];
 u8 RXbufferIndex = 0;
 
-#define SPIx SPI1
+
+
+#ifdef USE_SPI
 
 //To facilitate switching between communication protocals if needed...
 #define GetFlagStatus(flag) SPI_I2S_GetFlagStatus(SPIx, flag)
@@ -23,6 +26,16 @@ u8 RXbufferIndex = 0;
 #define ReceiveData() SPI_I2S_ReceiveData(SPIx)
 #define FLAG_TXE SPI_I2S_FLAG_TXE
 #define FLAG_RXNE SPI_I2S_FLAG_RXNE
+
+#else ifdef USE_IR
+
+#define GetFlagStatus(flag) USART_GetFlagStatus(USARTx, flag)
+#define SendData(data) USART_SendData(USARTx, data)
+#define ReceiveData() USART_ReceiveData(USARTx)
+#define FLAG_TXE USART_FLAG_TXE
+#define FLAG_RXNE USART_FLAG_RXNE
+
+#endif
 
 /*Configuration things */
 #if 1
@@ -50,8 +63,10 @@ void GPIO_Configuration(void)
 /*
 Taken from SPI CRC Example
 */
-void SPI_Configuration(void)
+
+void Net_Configuration(void)
 {
+#ifdef USE_SPI
 	SPI_InitTypeDef  SPI_InitStructure;
 
 	/* SPI1 configuration ------------------------------------------------------*/
@@ -79,8 +94,49 @@ void SPI_Configuration(void)
 	SPI_Cmd(SPIx, ENABLE);
 	/* Enable SPI2 */
 	//SPI_Cmd(SPI2, ENABLE);
-}
+#else ifdef USE_IR
+	USART_InitTypeDef USART_InitStructure;
 
+	/* USART3 configuration ------------------------------------------------------*/
+	/* USART3 configured as follow:
+		- BaudRate = 115200 baud  
+		- Word Length = 8 Bits
+		- One Stop Bit
+		- No parity
+		- Hardware flow control disabled (RTS and CTS signals)
+		- Receive and transmit enabled
+	*/
+	USART_InitStructure.USART_BaudRate = 115200;
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;
+	USART_InitStructure.USART_Parity = USART_Parity_No ;
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+
+
+	////* Configure the USART3 */
+	/* Configure the USART1 */
+	USART_Init(USART1, &USART_InitStructure);
+	////* Enable the USART3 */
+	/* Enable the USART1 */
+	USART_Cmd(USART1, ENABLE);
+
+	////* Set the USART3 prescaler */
+	/* Set the USART1 prescaler */
+	USART_SetPrescaler(USART1, 0x1);
+	////* Configure the USART3 IrDA mode */
+	/* Configure the USART1 IrDA mode */
+	USART_IrDAConfig(USART1, USART_IrDAMode_Normal);
+
+	////* Enable the USART3 IrDA mode */
+	/* Enable the USART1 IrDA mode */
+	USART_IrDACmd(USART1, ENABLE);
+
+	// CS Irda  = 1
+	GPIO_ResetBits(GPIOD, GPIO_Pin_8);
+
+#endif
+}
 //Configure Clock
 /*
 Taken from SPI CRC Example
@@ -103,9 +159,10 @@ void NetSetup(void)
 {
 	cbInit(&TXbuffer, TX_BUFFER_LEN);
 	cbInit(&RXbuffer, RX_BUFFER_LEN);
-	GPIO_Configuration();
 	RCC_Configuration();
-	SPI_Configuration();
+	
+	GPIO_Configuration();
+	Net_Configuration();
 }
 #endif  
 

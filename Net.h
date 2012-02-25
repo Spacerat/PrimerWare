@@ -10,17 +10,28 @@
 //Packet handler flags
 #define RX_FLAG_BADHEADER 1
 #define RX_FLAG_OVERFLOW 2
-//#include "circle_api.h"
+
+//Hardware settings
+#define SPIx SPI1
+#define USARTx USART1
+
+//#def USE_SPI //Uncomment to use SPI instead of IR
+#define USE_IR
+
 
 #include "stm32f10x.h"
 #include "misc.h"
 #include "stm32f10x_conf.h"
 #include "stm32f10x_gpio.h"
-#include "stm32f10x_spi.h"
 #include "stm32f10x_rcc.h"
 #include "circle_api.h"
 #include "cbuffer.h"
 
+#ifdef USE_SPI
+	#include "stm32f10x_spi.h"
+#else ifdef USE_IR
+	#include "stm32f10x_spi.h"
+#endif
 #define TICK_PACKET_RX 1
 #define TICK_DATA_TX 2
 
