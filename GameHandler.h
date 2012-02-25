@@ -8,9 +8,9 @@ enum GameStatusCode {
 };
 
 enum GameModeCode {
-	Game_SinglePlayer = 0
-	Game_CoOp = 1
-	Game_Vs = 2
+	Game_SinglePlayer = 0,
+	Game_CoOp = 1,
+	Game_Vs = 2,
 	Game_None = 3
 	
 };
@@ -21,9 +21,9 @@ struct GameStatus {
 };
 
 struct GameData {
-	enum GameModecode mode; // i.e. sp, coop, versus
+	enum GameModeCode mode; // i.e. sp, coop, versus
 	u8 isHost;
-}
+};
 
 typedef struct GameStatus (*gameRunFunction)(struct GameData * data);
 
