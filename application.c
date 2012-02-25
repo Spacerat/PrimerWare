@@ -13,6 +13,7 @@
 #include "RandNo.h"
 #include "GameDraw.h"
 #include "Timer.h"
+#include "Net.h"
 
 /* Constants -----------------------------------------------------------------*/
 #define NUMSINGLEGAMES 3 // Total number of single player games.

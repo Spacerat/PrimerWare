@@ -45,7 +45,7 @@ typedef struct _Packet {
 
 
 void NetSetup(void);
-void NetTick(void);
+void NetTick(net_rx_callback callback);
 int TransmitBytes(struct Packet * packet);
 
 
