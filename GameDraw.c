@@ -33,8 +33,8 @@ void GAMEDRAW_stageFail(void) {
 	DRAW_DisplayStringWithMode(0, 60, "Stage Failed D:", ALL_SCREEN, 1, 1);
 }
 void GAMEDRAW_roundFinished(int score, int lives) {
-	char scoreString[8];
-	char livesString[1];
+	char scoreString[8+1];
+	char livesString[1+1];
 	
 	UTIL_int2str(scoreString, score, 8, 1);
 	UTIL_int2str(livesString, lives, 1, 0);

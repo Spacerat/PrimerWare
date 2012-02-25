@@ -15,6 +15,7 @@
 #include "Timer.h"
 #include "GameHandler.h"
 #include "GamesList.h"
+#include "Touchscreen.h"
 
 /* Private defines -----------------------------------------------------------*/
 
@@ -184,7 +185,7 @@ enum MENU_code Application_Handler(void)
 			screenDrawn = 1;
 		}
 		
-		if (TOUCHSCR_IsPressed()) {
+		if (TOUCH_clickEvent().type == TouchType_Depressed) {
 			screen = display_Menu;
 			gamedata.mode = Game_None;
 			lives = 3;

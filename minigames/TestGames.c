@@ -8,6 +8,7 @@
 #include "../TestGames.h"
 #include "../circle_api.h"
 #include "../GameHandler.h"
+#include "../Touchscreen.h"
 
 struct GameStatus testRun1(struct GameData * data) {
 	static struct GameStatus status;
@@ -33,7 +34,8 @@ struct GameStatus testRun1(struct GameData * data) {
 	count++;
 	// END TIMING CODE!
 	
-	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
+	if (TOUCH_clickEvent().type == TouchType_Depressed)
+		status.code = gameStatus_Success;
 		
 	return status;
 }
@@ -62,7 +64,8 @@ struct GameStatus testRun2(struct GameData * data) {
 	count++;
 	// END TIMING CODE!
 	
-	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
+	if (TOUCH_clickEvent().type == TouchType_Depressed)
+		status.code = gameStatus_Success;
 		
 	return status;
 }
@@ -91,7 +94,8 @@ struct GameStatus testRun3(struct GameData * data) {
 	count++;
 	// END TIMING CODE!
 	
-	if (TOUCHSCR_IsPressed()) status.code = gameStatus_Success;
+	if (TOUCH_clickEvent().type == TouchType_Depressed)
+		status.code = gameStatus_Success;
 		
 	return status;
 }
