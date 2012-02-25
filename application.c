@@ -12,6 +12,13 @@
 #include "MenuHandler.h"
 #include "RandNo.h"
 #include "GameDraw.h"
+#include "Timer.h"
+
+/* Constants -----------------------------------------------------------------*/
+#define NUMSINGLEGAMES 3 // Total number of single player games.
+#define NUMCOOPGAMES 0 // Total number of co-op games.
+#define NUMVSGAMES 0 // Total number of versus games.
+#define ROUNDLENGTH 3 // Number of games in a round.
 
 /* Private defines -----------------------------------------------------------*/
 
@@ -24,13 +31,15 @@ static enum MENU_code MsgVersion(void);
 
 /* Public variables ----------------------------------------------------------*/
 const char Application_Name[8+1] = {"Pri.War."};      // Max 8 characters
-const int numGames = 3; // Number of games.
 
 /* Game function shizzles ----------------------------------------------------*/
 struct GameStatus testRun1(void);
 struct GameStatus testRun2(void);
 struct GameStatus testRun3(void);
-const gameRunFunction minigames[] = { testRun1, testRun2, testRun3 };
+const gameRunFunction minigamesSinglePlayer[] = { testRun1, testRun2,
+												  testRun3 };
+const gameRunFunction minigamesCoOp[] = { testRun1, testRun2, testRun3 };
+const gameRunFunction minigamesVs[] = { testRun1, testRun2, testRun3 };												  
 
 /*******************************************************************************
 * Function Name  : Application_Ini
@@ -56,9 +65,6 @@ enum MENU_code Application_Ini(void) {
     // Set speed.
 	UTIL_SetPll(SPEED_VERY_HIGH);
     MENU_SetAppliDivider(10);
-	
-	// Run the MenuHandler.
-	//MENUHANDLER_run();
 
     return MENU_CONTINUE_COMMAND;
     }
@@ -77,15 +83,16 @@ enum MENU_code Application_Handler(void)
 
 	// State for the game handler.
 	static bool atMenu = 1; // Are we supposed to be at the menu?
-	static const int sessionLength = 3; // Number of games per session.
-	static gameRunFunction minigameArray[3]; // Array of pointers to
-											 // minigame run functions.
+	static gameRunFunction minigameArray[ROUNDLENGTH]; // Holds current 
+													   // minigames.
 	static int currentMinigame = 0; // Index in the array of the current 
 									// pointer.
 	static int score = 0; // Current total score.
 	static int lives = 3; // Number of lives remaining.
 	static int amServer = 0; // Am I the server (multiplayer only of course)?
-		
+	
+	// Make sure the timers count up!
+	TIMER_tickTimers();
 		
 	if (atMenu) {
 		enum MenuCode menuCode = MENUHANDLER_run(); // Handle menu and get code.
@@ -95,9 +102,18 @@ enum MENU_code Application_Handler(void)
 			// Initialise the array of games.
 			init_rand(123);
 			
+			// Populate the minigame array according to game type.
+			gameRunFunction* theMinigames;
+			if (menuCode == MenuCode_SinglePlayer)
+				theMinigames = minigamesSinglePlayer;
+			else if (menuCode == MenuCode_TwoPlayerCoOp)
+				theMinigames = minigamesCoOp;
+			else
+				theMinigames = minigamesVs;
+			
 			int i = 0;
-			for (i = 0; i < sessionLength; i++)
-				minigameArray[i] = minigames[rand_cmwc() % numGames];
+			for (i = 0; i < ROUNDLENGTH; i++)
+				minigameArray[i] = theMinigames[rand_cmwc() % ROUNDLENGTH];
 			
 			// If a multiplayer game was started, set up the multiplayer.
 			if (menuCode != MenuCode_SinglePlayer) {
@@ -108,21 +124,27 @@ enum MENU_code Application_Handler(void)
 										   ALL_SCREEN, 0, 1);
 			}
 			
-			// TODO: Display start notification.
-			
 			// Change from menu mode to game mode.
 			atMenu = 0;
 		}
 	} else {
-		// Display the stage screen if we're about to start the game.
-		static int counter = 0; // Counter for timing.
+		// Display the stage screen if we're about to start a game.
+		
+		if (!TIMER_isEnabled(0)) {
+			TIMER_initTimer(0, 200);
+			GAMEDRAW_stageN(currentMinigame + 1);
+		}
+		
+		if (!TIMER_checkTimer(0)) return MENU_CONTINUE;
+		
+		/*static int counter = 0; // Counter for timing.
 		if (counter == 0) {
 			GAMEDRAW_stageN(currentMinigame + 1);
 		}
 		if (counter < 200) {
 			counter++;
 			return MENU_CONTINUE;
-		}
+		}*/
 		
 		// Run the current game and get its status.
 		struct GameStatus gameStatus = minigameArray[currentMinigame]();
@@ -131,16 +153,16 @@ enum MENU_code Application_Handler(void)
 		if (gameStatus.code == gameStatus_Success) {
 			score += gameStatus.score;
 			currentMinigame++;
-			counter = 0;
+			TIMER_disableTimer(0);
 		} else if (gameStatus.code == gameStatus_Fail) {
 			lives--;
 			currentMinigame++;
-			counter = 0;
+			TIMER_disableTimer(0);
 		}
 		
 		// If you die or finish, display stuff then exit.
-		if (lives == 0 || currentMinigame == sessionLength) {
-			// TODO: Display score, etc.
+		if (lives == 0 || currentMinigame == ROUNDLENGTH) {
+			GAMEDRAW_roundFinished(score, lives);
 			
 			atMenu = 1;
 			lives = 3;
@@ -150,14 +172,13 @@ enum MENU_code Application_Handler(void)
 	}
 		
     // If the button is pressed, the application is exited
-    if (BUTTON_GetState() == BUTTON_PUSHED)
-        {
+    if (BUTTON_GetState() == BUTTON_PUSHED) {
         BUTTON_WaitForRelease();
         return MENU_Quit();
-        }
+    }
 
     return MENU_CONTINUE;   // Returning MENU_LEAVE will quit to CircleOS
-    }
+}
 
 /*******************************************************************************
 * Function Name  : MsgVersion

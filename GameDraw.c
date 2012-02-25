@@ -32,7 +32,7 @@ void GAMEDRAW_stageFail(void) {
 	
 	DRAW_DisplayStringWithMode(0, 60, "Stage Failed D:", ALL_SCREEN, 1, 1);
 }
-void GAMEDRAW_sessionFinished(int score, int lives) {
+void GAMEDRAW_roundFinished(int score, int lives) {
 	char scoreString[8];
 	char livesString[1];
 	
