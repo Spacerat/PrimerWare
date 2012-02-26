@@ -26,12 +26,11 @@ enum MenuCode MENUHANDLER_run(void) {
 	
 	// Check if the user has touched in the screen. If the touch was within a
 	// button, call the function for that button.
-	//struct TouchEvent touchEvent = TOUCH_clickEvent();
+	struct TouchEvent t = TOUCH_clickEvent();
 	
-	if (TOUCHSCR_IsPressed() == 1) {
-		u16 pos = TOUCHSCR_GetPos();
-        u8  xPos = (u8)(pos);
-        u8  yPos = (u8)(pos>>8);
+	if (t.type == TouchType_Depressed) {
+		u8  xPos = (u8)(t.position);
+        u8  yPos = (u8)(t.position>>8);
           	
 		// Top button pressed.
 		if (xPos >= MENUDRAW_BOXES_XCOORD &&
