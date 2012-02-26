@@ -58,8 +58,18 @@ enum MENU_code Application_Ini(void) {
 	UTIL_SetPll(SPEED_VERY_HIGH);
     MENU_SetAppliDivider(10);
 
+	NET_RCC_Configuration();
+
     return MENU_CONTINUE_COMMAND;
     }
+
+static gameRunFunction minigameArray[ROUNDLENGTH]; // Holds current minigames
+
+void startMinigames(gameRunFunction* theMinigames) {
+	int i = 0;
+	for (i = 0; i < ROUNDLENGTH; i++)
+		minigameArray[i] = theMinigames[rand_cmwc() % ROUNDLENGTH];
+}
 
 /*******************************************************************************
 * Function Name  : Application_Handler
@@ -78,8 +88,7 @@ enum MENU_code Application_Handler(void)
 	
 	static struct GameData gamedata; //Things the minigames need to know (e.g. are we multiplayer?)
 	
-	static gameRunFunction minigameArray[ROUNDLENGTH]; // Holds current 
-													   // minigames.
+
 	static int currentMinigame = 0; // Index in the array of the current 
 									// pointer.
 	static int score = 0; // Current total score.
@@ -88,13 +97,34 @@ enum MENU_code Application_Handler(void)
 	const unsigned int stageScreenTimerValue = 200; // Timer value for stage
 													// screens.
 	
+	NET_Setup(); //Calling this multiple times does nothing.
+	
 	// Make sure the timers count up!
 	TIMER_tickTimers();
 	
 	if (screen == display_Menu) {
 		enum MenuCode menuCode = MENUHANDLER_run(); // Handle menu and get code.
-		
-		//Net code!
+	
+		//Recieve data - check if someone wants to start a game with us.
+		if (NET_Tick() & NETTICK_FLAG_RX) {
+			u8 type;
+			u8 buffer[PACKET_MAX_SIZE];
+			NET_GetPacketData(&type, buffer);
+			switch (type) {
+				case PACKET_requestGame:
+					NET_TransmitStringPacket(PACKET_ACKGame, "ack");
+					break;
+				case PACKET_ACKGame:
+					if (strcmp(buffer, "coop") == 0) {
+						//We have sent a coop request and received the ACK.
+						//We are the host.
+						startMinigames(minigamesCoOp);
+						gamedata.mode = Game_CoOp;
+						gamedata.isHost = TRUE;
+					};
+					break;
+			}
+		}
 	
 		// If the button is pressed, the application is exited
 		if (BUTTON_GetState() == BUTTON_PUSHED) {
@@ -106,35 +136,25 @@ enum MENU_code Application_Handler(void)
 			// Pupulate minigame array.
 			init_rand(123);
 			
-			gameRunFunction* theMinigames;
 			if (menuCode == MenuCode_SinglePlayer) {
-				theMinigames = minigamesSinglePlayer;
+				//Jump straight in if single player is selected
+				startMinigames(minigamesSinglePlayer);
 				gamedata.mode = Game_SinglePlayer;
+				screen = display_StageStart;
 			}
 			else if (menuCode == MenuCode_TwoPlayerCoOp) {
-				theMinigames = minigamesCoOp;
-				gamedata.mode = Game_CoOp;
+				//If multiplayer, send a request and wait for an ACK
+				NET_TransmitStringPacket(PACKET_requestGame,  "coop");
 			}
 			else {
-				theMinigames = minigamesVs;
-				gamedata.mode = Game_Vs;
+				//theMinigames = minigamesVs;
+				//gamedata.mode = Game_Vs;
 			}
 			
-			int i = 0;
-			for (i = 0; i < ROUNDLENGTH; i++)
-				minigameArray[i] = theMinigames[rand_cmwc() % ROUNDLENGTH];
-			
-			// If a multiplayer game was started, set up the multiplayer.
-			if (menuCode != MenuCode_SinglePlayer) {
-				// TODO: Multiplayer init code.
-				DRAW_DisplayStringWithMode(0,
-										   0,
-										   "Multiplayah!",
-										   ALL_SCREEN, 0, 1);
-			}
+
 			
 			// Change from menu mode to game mode.
-			screen = display_StageStart;
+			
 		}
 		
 	} else if (screen == display_StageStart) {
