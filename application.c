@@ -7,7 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "circle_api.h"
-
+#include "stm32f10x.h"
 #include "Application.h"
 #include "MenuHandler.h"
 #include "RandNo.h"

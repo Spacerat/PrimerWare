@@ -1,6 +1,18 @@
 
 #include "Net.h"
 
+#include "misc.h"
+#include "stm32f10x_conf.h"
+#include "stm32f10x_gpio.h"
+#include "stm32f10x_rcc.h"
+#ifdef USE_SPI
+	#include "stm32f10x_spi.h"
+#endif
+#ifdef USE_IR
+	#include "stm32f10x_usart.h"
+#endif
+#include "cbuffer.h"
+
 
 #define BAUD_RATE 115200
 
@@ -27,7 +39,8 @@ u8 RXbufferIndex = 0;
 #define FLAG_TXE SPI_I2S_FLAG_TXE
 #define FLAG_RXNE SPI_I2S_FLAG_RXNE
 
-#else ifdef USE_IR
+#endif
+#ifdef USE_IR
 
 #define GetFlagStatus(flag) USART_GetFlagStatus(USARTx, flag)
 #define SendData(data) USART_SendData(USARTx, data)
@@ -38,7 +51,7 @@ u8 RXbufferIndex = 0;
 #endif
 
 /*Configuration things */
-#if 1
+
 //Configure GPIO
 /*
 Taken from SPI CRC Example
@@ -94,7 +107,8 @@ void Net_Configuration(void)
 	SPI_Cmd(SPIx, ENABLE);
 	/* Enable SPI2 */
 	//SPI_Cmd(SPI2, ENABLE);
-#else ifdef USE_IR
+#endif
+#ifdef USE_IR
 	USART_InitTypeDef USART_InitStructure;
 
 	/* USART3 configuration ------------------------------------------------------*/
@@ -158,13 +172,12 @@ void RCC_Configuration(void)
 void NetSetup(void)
 {
 	cbInit(&TXbuffer, TX_BUFFER_LEN);
-	cbInit(&RXbuffer, RX_BUFFER_LEN);
 	RCC_Configuration();
 	
 	GPIO_Configuration();
 	Net_Configuration();
 }
-#endif  
+
 
 
 //Send a string to the IR library for transmission.
@@ -174,14 +187,14 @@ transmission queue.
 
 Returns 1 if there is no null character in the packet data (overflow).
 */
-int TransmitBytes(struct Packet * packet)
+int TransmitBytes(Packet * packet)
 {
 	cbWrite(&TXbuffer, PACKET_BEGIN);
 	cbWrite(&TXbuffer, packet->type);
 
 	int k;
 	for (k = 0; k < PACKET_MAX_SIZE; k++) {
-		cbWrite((buff_t)packet->data[k]);
+		cbWrite(&TXbuffer, (buff_t)packet->data[k]);
 		if (packet->data[k] == '\0') {
 			return 0;
 		}
@@ -196,21 +209,21 @@ Return value may include a number of flags:
 - IR_PACKET_RX: A packet has been received
 - IR_TX_EMPTY: There is no more data to send
 */
-char NetTick(net_rx_callback callback)
+u8 NetTick(net_rx_callback callback)
 {
 	//Send any data sitting in the buffer.
-	if (!cbIsEmpty(TXbuffer) && ((GetFlagStatus(FLAG_TXE) != RESET))) {
+	if (!cbIsEmpty(&TXbuffer) && ((GetFlagStatus(FLAG_TXE) != RESET))) {
 		char data;
-		cbRead(TXbuffer, &data);
+		cbRead(&TXbuffer, &data);
 		SendData((u8)data);
 	}
 	
 	//Recieve data
-	if (GetFlagStatus(( SPI_I2S_FLAG_RXNE) == SET) {
+	if (GetFlagStatus(FLAG_RXNE) == SET) {
 		u8 ReceivedData = ReceiveData();
 		RXbuffer[RXbufferIndex++] = ReceivedData;
 		u8 overflow;
-		if (ReceivedData == '\0' || (overflow = (RXbufferIndex == PACKET_MAX_LENGTH + 2))) {
+		if (ReceivedData == '\0' || (overflow = (RXbufferIndex == PACKET_MAX_SIZE + 2))) {
 			u8 flags = 0;
 			//0xFF is expected as the first value
 			if (RXbuffer[0] != 0xFF) {
@@ -221,7 +234,8 @@ char NetTick(net_rx_callback callback)
 			}
 			
 			u8 type = RXbuffer[1];
-			u8 data[] = RXbuffer + 2;
+			u8 * data;
+			data = RXbuffer + 2;
 			callback(type, data, flags);
 		}
 	}
