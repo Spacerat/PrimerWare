@@ -14,7 +14,6 @@ enum GameModeCode {
 	Game_CoOp = 1,
 	Game_Vs = 2,
 	Game_None = 3
-	
 };
 
 struct GameData {

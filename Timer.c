@@ -9,7 +9,6 @@
 
 #define TIMER_NOTIMERS 10
 
-
 static unsigned int timers[TIMER_NOTIMERS]; // Array of ints to hold timer 
 											// values.
 static bool timerActive[TIMER_NOTIMERS]; // Is the timer enabled?
