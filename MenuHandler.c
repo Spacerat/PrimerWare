@@ -29,8 +29,8 @@ enum MenuCode MENUHANDLER_run(void) {
 	struct TouchEvent t = TOUCH_clickEvent();
 	
 	if (t.type == TouchType_Depressed) {
-		u8  xPos = (u8)(t.position);
-        u8  yPos = (u8)(t.position>>8);
+		u8 xPos = (u8)(t.position);
+        u8 yPos = (u8)(t.position>>8);
           	
 		// Top button pressed.
 		if (xPos >= MENUDRAW_BOXES_XCOORD &&

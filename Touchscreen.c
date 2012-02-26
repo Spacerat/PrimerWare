@@ -11,16 +11,18 @@
 
 //Todo: maybe take a TouchEvent pointer as an argument instead?
 struct TouchEvent TOUCH_clickEvent(void) {
-	struct TouchEvent touchEvent;
+	static struct TouchEvent touchEvent;
 	static bool lastTouch = 0;
 
 	if (TOUCHSCR_IsPressed())
 		if (lastTouch) {
 			lastTouch = 1;
 			touchEvent.type = TouchType_StillPressed;
+			touchEvent.position = TOUCHSCR_GetPos();
 		} else {
 			lastTouch = 1;
 			touchEvent.type = TouchType_Pressed;
+			touchEvent.position = TOUCHSCR_GetPos();
 		}
 	else
 		if (lastTouch) {
@@ -30,8 +32,6 @@ struct TouchEvent TOUCH_clickEvent(void) {
 			lastTouch = 0;
 			touchEvent.type = TouchType_StillDepressed;
 		}
-		
-	touchEvent.position = TOUCHSCR_GetPos();
 		
 	return touchEvent;
 }
