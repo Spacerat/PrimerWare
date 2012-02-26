@@ -1,7 +1,7 @@
 #ifndef TIMER_H_GUARD
 #define TIMER_H_GUARD
 
-#define TIME_SECOND 100
+#define TIME_SECOND 300
 
 void TIMER_initTimer(unsigned int timerNo, unsigned int timerMax);
 
