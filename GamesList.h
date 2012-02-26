@@ -8,11 +8,11 @@
 
 #include "GameHandler.h"
 #include "minigames/TestGames.h"
-#include "minigames/tappy.h"
+#include "minigames/BalloonInflate.h"
 
 
-gameRunFunction minigamesSinglePlayer[] = { minigame_tappy };
-gameRunFunction minigamesCoOp[] = { minigame_tappy };
-gameRunFunction minigamesVs[] = { minigame_tappy};
+gameRunFunction minigamesSinglePlayer[] = { BalloonInflate_run };
+gameRunFunction minigamesCoOp[] = { BalloonInflate_run };
+gameRunFunction minigamesVs[] = { BalloonInflate_run };
 
 #endif
