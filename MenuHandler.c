@@ -11,11 +11,20 @@
 #include "MenuDraw.h"
 #include "Touchscreen.h"
 
+static bool menuDrawn = 0; // Has the (players) menu been drawn yet?
+
+
+/*
+ * Set the menu as drawn (or not) so it will redraw.
+ */
+enum MenuCode MENUHANDLER_setDrawn(bool drawn) {
+	menuDrawn = drawn;
+}
+
 /*
  * Main menu call.
  */
-enum MenuCode MENUHANDLER_run(void) {
-	static bool menuDrawn = 0; // Has the (players) menu been drawn yet?
+enum MenuCode MENUHANDLER_run() {
 	static bool playersMenu = 1; // Are we on the players menu?
 	
 	// Draw the menu if it hasn't already been drawn.
@@ -37,9 +46,7 @@ enum MenuCode MENUHANDLER_run(void) {
 			xPos <= MENUDRAW_BOXES_XCOORD + MENUDRAW_BOXES_WIDTH &&
 			yPos >= MENUDRAW_TOPBOX_YCOORD &&
 			yPos <= MENUDRAW_TOPBOX_YCOORD + MENUDRAW_BOXES_HEIGHT) {
-			
-			menuDrawn = 0;	
-			
+						
 			if (playersMenu) return MenuCode_SinglePlayer;
 			else return MenuCode_TwoPlayerCoOp;
 		// Bottom button pressed.
@@ -51,7 +58,6 @@ enum MenuCode MENUHANDLER_run(void) {
 				playersMenu = 0;
 				MENUHANDLER_MultiPlayer();
 			} else {
-				menuDrawn = 0;
 				return MenuCode_TwoPlayerVs;
 			}
 		}

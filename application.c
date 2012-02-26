@@ -227,6 +227,7 @@ enum MENU_code Application_Handler(void)
 		}
 		
 		if (TOUCH_clickEvent().type == TouchType_Depressed) {
+			MENUHANDLER_setDrawn(FALSE);
 			screen = display_Menu;
 			gamedata.mode = Game_None;
 			lives = 3;

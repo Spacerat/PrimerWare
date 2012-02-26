@@ -7,7 +7,7 @@ enum MenuCode {
 	MenuCode_TwoPlayerVs = 2,
 	MenuCode_Nothing = 3
 };
-
+enum MenuCode MENUHANDLER_setDrawn(bool drawn);
 enum MenuCode MENUHANDLER_run(void);
 	void MENUHANDLER_SinglePlayer(void);
 	void MENUHANDLER_MultiPlayer(void);
