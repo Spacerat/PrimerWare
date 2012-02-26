@@ -6,7 +6,8 @@ enum CurrentDisplay {
 	display_Game = 2,
 	display_StageSuccess = 3,
 	display_StageFail = 4,
-	display_RoundFinish = 5
+	display_RoundFinish = 5,
+	display_Lobby = 6
 };
 
 #endif
