@@ -22,6 +22,10 @@ static bool BalloonInflate_initialised = 0; // Have we run the init yet?
 static int BalloonInflate_taps; // No. of taps.
 static bool BalloonInflate_balloonDrawn = 0; // Has the balloon been drawn?
 
+void BalloonInflate_init(void);
+void BalloonInflate_draw(void);
+void BalloonInflate_end(void);
+
 void BalloonInflate_run(struct GameData * data) {
 	if (!BalloonInflate_initialised) BalloonInflate_init();
 	
