@@ -72,13 +72,14 @@ enum MENU_code Application_Handler(void)
 	// State for the game handler.
 	static enum CurrentDisplay screen; // Where are we?!
 	
-	static struct GameData gamedata; //Things the minigames need to know (e.g. are we multiplayer?)
+	static struct GameData gamedata; // Things the minigames need to know
+									 // (e.g. are we multiplayer?)
 	
 	static gameRunFunction minigameArray[ROUNDLENGTH]; // Holds current 
 													   // minigames.
 	static int currentMinigame = 0; // Index in the array of the current 
 									// pointer.
-	static int score = 100; // Current total score.
+	static int score = 0; // Current total score.
 	static int lives = 3; // Number of lives remaining.
 	static int amServer = 0; // Am I the server (multiplayer only of course)?
 	const unsigned int stageScreenTimerValue = 200; // Timer value for stage
@@ -88,7 +89,8 @@ enum MENU_code Application_Handler(void)
 	TIMER_tickTimers();
 		
 	if (screen == display_Menu) {
-		enum MenuCode menuCode = MENUHANDLER_run(); // Handle menu and get code.
+		enum MenuCode menuCode = MENUHANDLER_run(); // Handle menu and get 
+													// code.
 		
 		// If we have chosen a game type...
 		if (menuCode != MenuCode_Nothing) {			
@@ -138,7 +140,6 @@ enum MENU_code Application_Handler(void)
 		}
 	} else if (screen == display_Game) {
 		// Run the current game and get its status.
-		
 		minigameArray[currentMinigame](&gamedata);
 			
 		// If the game has finished...
@@ -153,6 +154,7 @@ enum MENU_code Application_Handler(void)
 				screen = display_StageFail;
 			}
 			
+			// Reset gamedata for next game.
 			gamedata.code = gameStatus_InProgress;
 			gamedata.score = 0;
 		}
@@ -190,7 +192,7 @@ enum MENU_code Application_Handler(void)
 		static bool screenDrawn = 0;
 		
 		if (!screenDrawn) {
-			GAMEDRAW_roundFinished(133, 2);
+			GAMEDRAW_roundFinished(score, lives);
 			screenDrawn = 1;
 		}
 		
@@ -200,6 +202,7 @@ enum MENU_code Application_Handler(void)
 			lives = 3;
 			score = 0;
 			currentMinigame = 0;
+			screenDrawn = 0;
 		}
 	}
 		
