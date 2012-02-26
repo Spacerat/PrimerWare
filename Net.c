@@ -3,6 +3,7 @@
 
 
 #include "cbuffer.h"
+#include <string.h>
 
 
 #define BAUD_RATE 115200
@@ -20,7 +21,7 @@ u8 RXbuffer[PACKET_MAX_SIZE + 1];
 u8 RXbufferIndex = 0;
 
 static u8 lastpacket_type;
-static bool clear_RX_buffer_at_next_tick = 1;
+static bool clear_RX_buffer_at_next_tick = TRUE;
 
 #ifdef USE_SPI
 
@@ -216,10 +217,11 @@ u8 NET_NetTick(void)
 	//If a packet was received last tick, it should have been dealt with by now.
 	//discard it from memory
 	if (clear_RX_buffer_at_next_tick) {
+		int i;
 		for (i = 0; i < PACKET_MAX_SIZE + 2; i++) {
 			RXbuffer[i] = '\0';
 		}
-		clear_RX_buffer_at_next_tick = false;
+		clear_RX_buffer_at_next_tick = FALSE;
 		lastpacket_type = 0;
 	}
 
@@ -249,7 +251,7 @@ u8 NET_NetTick(void)
 			}
 			
 			lastpacket_type = RXbuffer[1];
-			clear_RX_buffer_at_next_tick = true;
+			clear_RX_buffer_at_next_tick = TRUE;
 		}
 	}
 
