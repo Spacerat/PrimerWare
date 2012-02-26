@@ -1,19 +1,17 @@
 
 #define TIMER_TAPPY 1
 
-#define TAPPY_PLAYING
 
 #include "tappy.h"
-#include "../circle_api.h"
-#include "../GameHandler.h"
+#include "circle_api.h"
 
-static tappy_running;
-static tappy_taps;
+#include "../Timer.h"
+#include "../Touchscreen.h"
+static int tappy_running;
+static int tappy_taps;
 
-static struct GameStatus status;
 
-
-static void minigame_tappy_draw() {
+static void minigame_tappy_draw(struct GameData * data) {
 	DRAW_Clear();
 	
 	DRAW_DisplayStringWithMode(0,
@@ -30,50 +28,64 @@ static void minigame_tappy_draw() {
 							   ALL_SCREEN, 0, 1);
 }
 
-//Game logic
-static int minigame_tappy_logic() {
-	if (tappy_running == 0) {
-		//First run
-		tappy_taps = 0;
-		TIMER_initTimer(TIMER_TAPPY, TIME_SECOND * 5);
-		tappy_running = 1;
-		status.code = gameStatus_InProgress;
-	}
-	
-	if (tappy_taps > 25) {
-		return 1;
-	}
-	
-	if (TOUCHSCR_IsPressed()) {
-		tappy_tapps++;
-	}
+static void tappy_begin(struct GameData * data) {
+	//First run
+	tappy_taps = 0;
+	TIMER_initTimer(TIMER_TAPPY, TIME_SECOND * 5);
+	tappy_running = 1;
 }
 
-struct GameStatus minigame_tappy(struct GameData * data) {
-	int state = minigame_tappy_logic();
-	minigame_tappy_draw();
+static void tappy_end(struct GameData * data) {
+	tappy_taps = 0;
+	tappy_running = 0;
+}
+
+//Game logic
+static int minigame_tappy_logic(struct GameData * data) {
+	if (tappy_running == 0) {
+		tappy_begin(data);
+	}
+	
+	if (tappy_taps > 5) {
+		return gameStatus_Success;
+	}
+	
+	if (TIMER_checkTimer(TIMER_TAPPY)) {
+		return gameStatus_Fail;
+	}
+	struct TouchEvent t = TOUCH_clickEvent();
+	if (t.type == TouchType_Depressed) {
+		tappy_taps++;
+	}
+	
+	return gameStatus_InProgress;
+}
+
+void minigame_tappy(struct GameData * data) {
+	int state = minigame_tappy_logic(data);
+	minigame_tappy_draw(data);
 	
 	switch (data->mode) {
+		case Game_Vs:
+		case Game_CoOp:
 		case Game_SinglePlayer:
 			switch (state) {
-				case TAPPY_FAIL:
-					status.code = gameStatus_Fail;
-				case TAPPY_WON:
-					status.code = gameStatus_Success;
-				case TAPPY_PLAYING:
+				case gameStatus_Fail:
+					data->code = gameStatus_Fail;
+				case gameStatus_Success:
+					data->code = gameStatus_Success;
+				case gameStatus_InProgress:
+					data->code = gameStatus_InProgress;
 				default:
 					break;
 			}
 			break;
-		case Game_Vs:
-		case Game_CoOp:
-			//Unimplimented
-			status.code = gameStatus_Success;
+		default:
 			break;
-		case default:
-			assert(0); //This should never happen.
+			//assert(0); //This should never happen.
 	}
-
-	return status;
+	if (data->code == gameStatus_Success || data->code == gameStatus_Fail) {
+		tappy_end(data);
+	}
 }
 

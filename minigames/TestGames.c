@@ -5,15 +5,14 @@
 *
 *******************************************************************************/
 
-#include "../TestGames.h"
-#include "../circle_api.h"
+#include "TestGames.h"
+#include "circle_api.h"
 #include "../GameHandler.h"
 #include "../Touchscreen.h"
 
-struct GameStatus testRun1(struct GameData * data) {
-	static struct GameStatus status;
-	status.code = gameStatus_InProgress;
-	status.score = 0;
+void testRun1(struct GameData * data) {
+	data->code = gameStatus_InProgress;
+	data->score = 0;
 	
 	DRAW_Clear();
 	DRAW_DisplayStringWithMode(0,
@@ -35,15 +34,13 @@ struct GameStatus testRun1(struct GameData * data) {
 	// END TIMING CODE!
 	
 	if (TOUCH_clickEvent().type == TouchType_Depressed)
-		status.code = gameStatus_Success;
-		
-	return status;
+		data->code = gameStatus_Success;
+
 }
 
-struct GameStatus testRun2(struct GameData * data) {
-	static struct GameStatus status;
-	status.code = gameStatus_InProgress;
-	status.score = 0;
+void testRun2(struct GameData * data) {
+	data->code = gameStatus_InProgress;
+	data->score = 0;
 	
 	DRAW_Clear();
 	DRAW_DisplayStringWithMode(0,
@@ -65,15 +62,12 @@ struct GameStatus testRun2(struct GameData * data) {
 	// END TIMING CODE!
 	
 	if (TOUCH_clickEvent().type == TouchType_Depressed)
-		status.code = gameStatus_Success;
-		
-	return status;
+		data->code = gameStatus_Success;
 }
 
-struct GameStatus testRun3(struct GameData * data) {
-	static struct GameStatus status;
-	status.code = gameStatus_InProgress;
-	status.score = 0;
+void testRun3(struct GameData * data) {
+	data->code = gameStatus_InProgress;
+	data->score = 0;
 	
 	DRAW_Clear();
 	DRAW_DisplayStringWithMode(0,
@@ -95,7 +89,6 @@ struct GameStatus testRun3(struct GameData * data) {
 	// END TIMING CODE!
 	
 	if (TOUCH_clickEvent().type == TouchType_Depressed)
-		status.code = gameStatus_Success;
+		data->code = gameStatus_Success;
 		
-	return status;
 }

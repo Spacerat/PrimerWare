@@ -139,14 +139,14 @@ enum MENU_code Application_Handler(void)
 	} else if (screen == display_Game) {
 		// Run the current game and get its status.
 		
-		struct GameStatus gameStatus = minigameArray[currentMinigame](&gamedata);
+		minigameArray[currentMinigame](&gamedata);
 			
 		// If the game has finished...
-		if (gameStatus.code != gameStatus_InProgress) {
+		if (gamedata.code != gameStatus_InProgress) {
 			currentMinigame++;
 			
-			if (gameStatus.code == gameStatus_Success) {
-				score += gameStatus.score;
+			if (gamedata.code == gameStatus_Success) {
+				score += gamedata.score;
 				screen = display_StageSuccess;
 			} else {
 				lives--;
