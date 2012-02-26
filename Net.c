@@ -21,6 +21,7 @@ CircularBuffer TXbuffer;           //Stores all data to be transmitted
 u8 RXbuffer[PACKET_MAX_SIZE + 1];  //Stores all received packet data
 u8 RXbufferIndex = 0;              //Counts data in the RX buffer
 static u8 lastpacket_type;         //This is set when the last packet is received
+static u8 net_flags = 0;
 
 static bool clear_RX_buffer_at_next_tick = TRUE;
 
@@ -232,6 +233,10 @@ u8 NET_GetPacketData(u8 * type, u8 * buffer) {
 	return (u8)strlen(buffer + 2);
 }
 
+u8 NET_GetFlags() {
+	return net_flags;
+}
+
 //Send/Recieve IR packets.
 /*
 Return value may include a number of flags:
@@ -240,7 +245,7 @@ Return value may include a number of flags:
 */
 u8 NET_Tick(void)
 {
-	u8 flags = 0;
+	
 	//If a packet was received last tick, it should have been dealt with by now.
 	//discard it from memory
 	if (clear_RX_buffer_at_next_tick) {
@@ -250,6 +255,7 @@ u8 NET_Tick(void)
 		}
 		clear_RX_buffer_at_next_tick = FALSE;
 		lastpacket_type = PACKET_NULL;
+		net_flags = 0;
 	}
 
 	//Send any data sitting in the buffer.
@@ -257,7 +263,7 @@ u8 NET_Tick(void)
 		char data;
 		cbRead(&TXbuffer, &data);
 		SendData((u8)data);
-		flags |= NETTICK_FLAG_TX;
+		net_flags |= NETTICK_FLAG_TX;
 	}
 
 
@@ -268,13 +274,13 @@ u8 NET_Tick(void)
 		u8 overflow;
 	
 		if (ReceivedData == '\0' || (overflow = (RXbufferIndex == PACKET_TOTAL_SIZE))) {
-			flags |= NETTICK_FLAG_RX;
+			net_flags |= NETTICK_FLAG_RX;
 			//0xFF is expected as the first value
 			if (RXbuffer[0] != 0xFF) {
-				flags |= NETTICK_FLAG_BADHEADER;
+				net_flags |= NETTICK_FLAG_BADHEADER;
 			}
 			if (overflow) {
-				flags |= NETTICK_FLAG_OVERFLOW;
+				net_flags |= NETTICK_FLAG_OVERFLOW;
 				RXbuffer[PACKET_MAX_SIZE + 1] = '\0';
 			}
 			
