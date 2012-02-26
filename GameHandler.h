@@ -1,7 +1,7 @@
 #ifndef GAMEHANDLER_H_GUARD
 #define GAMEHANDLER_H_GUARD
 
-
+#include "circle_api.h"
 
 enum GameStatusCode {
 	gameStatus_InProgress = 0,
@@ -20,7 +20,7 @@ enum GameModeCode {
 struct GameData {
 	enum GameModeCode mode; // i.e. sp, coop, versus
 	enum GameStatusCode code;
-	int isHost;
+	bool isHost;
 	int score;
 };
 

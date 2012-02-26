@@ -39,8 +39,12 @@
 enum PacketTypes {
 	PACKET_NULL = 0,
 	/* --- Menu packets --- */
-	PACKET_beginGame,
-	PACKET_ACKGame
+	PACKET_requestGame,
+	PACKET_ACKGame,
+
+	/* --- Game packets --- */
+	PACKET_gameData
+	
 };
 
 
