@@ -9,6 +9,7 @@
 
 #include "Touchscreen.h"
 
+//Todo: maybe take a TouchEvent pointer as an argument instead?
 struct TouchEvent TOUCH_clickEvent(void) {
 	struct TouchEvent touchEvent;
 	static bool lastTouch = 0;
