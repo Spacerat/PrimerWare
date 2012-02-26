@@ -156,6 +156,8 @@ enum MENU_code Application_Handler(void)
 			// Check if we need to end.
 			if (lives == 0 || currentMinigame == ROUNDLENGTH)
 				screen = display_RoundFinish;
+			gamedata.code = gameStatus_InProgress;
+			gamedata.score = 0;
 		}
 	} else if (screen == display_StageSuccess) {
 		if (!TIMER_isEnabled(0)) {

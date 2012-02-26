@@ -12,30 +12,26 @@ static int tappy_taps;
 
 
 static void minigame_tappy_draw(struct GameData * data) {
-	DRAW_Clear();
 	
+	
+
+							   
+
+}
+
+static void tappy_begin() {
+	//First run
+	DRAW_Clear();
+	tappy_taps = 0;
+	TIMER_initTimer(TIMER_TAPPY, TIME_SECOND * 3);
+	tappy_running = 1;
 	DRAW_DisplayStringWithMode(0,
 							   25,
-							   "Pump up the balloon!",
-							   ALL_SCREEN, 0, 1);
-							   
-	char countString[8];
-	UTIL_int2str(countString, tappy_taps, 8, 1);
-	
-	DRAW_DisplayStringWithMode(0,
-							   10,
-							   countString,
+							   "Tap quickly!",
 							   ALL_SCREEN, 0, 1);
 }
 
-static void tappy_begin(struct GameData * data) {
-	//First run
-	tappy_taps = 0;
-	TIMER_initTimer(TIMER_TAPPY, TIME_SECOND * 5);
-	tappy_running = 1;
-}
-
-static void tappy_end(struct GameData * data) {
+static void tappy_end() {
 	tappy_taps = 0;
 	tappy_running = 0;
 }
@@ -43,27 +39,40 @@ static void tappy_end(struct GameData * data) {
 //Game logic
 static int minigame_tappy_logic(struct GameData * data) {
 	if (tappy_running == 0) {
-		tappy_begin(data);
+		tappy_begin();
 	}
 	
-	if (tappy_taps > 5) {
-		return gameStatus_Success;
-	}
-	
+
 	if (TIMER_checkTimer(TIMER_TAPPY)) {
 		return gameStatus_Fail;
 	}
+	char nString[8];
+	unsigned int ticksleft = TIMER_ticksLeft(TIMER_TAPPY);
+	UTIL_int2str(nString, ticksleft, 8, 1);
+	DRAW_DisplayStringWithMode(0,
+							   40,
+							   nString,
+							   ALL_SCREEN, 0, 1);
 	struct TouchEvent t = TOUCH_clickEvent();
 	if (t.type == TouchType_Depressed) {
 		tappy_taps++;
+		
+		UTIL_int2str(nString, tappy_taps, 8, 1);
+		
+		DRAW_DisplayStringWithMode(0,
+								   10,
+								   nString,
+								   ALL_SCREEN, 0, 1);
 	}
-	
+	if (tappy_taps > 5) {
+		return gameStatus_Success;
+	}
 	return gameStatus_InProgress;
 }
 
 void minigame_tappy(struct GameData * data) {
 	int state = minigame_tappy_logic(data);
-	minigame_tappy_draw(data);
+	
 	
 	switch (data->mode) {
 		case Game_Vs:
@@ -72,10 +81,13 @@ void minigame_tappy(struct GameData * data) {
 			switch (state) {
 				case gameStatus_Fail:
 					data->code = gameStatus_Fail;
+					break;
 				case gameStatus_Success:
 					data->code = gameStatus_Success;
+					break;
 				case gameStatus_InProgress:
 					data->code = gameStatus_InProgress;
+					break;
 				default:
 					break;
 			}
@@ -85,7 +97,7 @@ void minigame_tappy(struct GameData * data) {
 			//assert(0); //This should never happen.
 	}
 	if (data->code == gameStatus_Success || data->code == gameStatus_Fail) {
-		tappy_end(data);
+		tappy_end();
 	}
 }
 

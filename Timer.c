@@ -25,6 +25,10 @@ bool TIMER_checkTimer(unsigned int timerNo) {
 	return timers[timerNo] >= timerMax[timerNo];
 }
 
+unsigned int TIMER_ticksLeft(unsigned int timerNo) {
+	return TIMER_checkTimer(timerNo) ? 0 : timerMax[timerNo] - timers[timerNo];
+}
+
 void TIMER_tickTimers(void) {
 	int i;
 	
