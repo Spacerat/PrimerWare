@@ -1,6 +1,21 @@
 #ifndef NET_H_GUARD
 #define NET_H_GUARD
 
+//#def USE_SPI //Uncomment to use SPI instead of IR
+#define USE_IR
+
+
+#include "misc.h"
+#include "stm32f10x_conf.h"
+#include "stm32f10x_gpio.h"
+
+#ifdef USE_SPI
+	#include "stm32f10x_spi.h"
+#endif
+#ifdef USE_IR
+	#include "stm32f10x_usart.h"
+#endif
+#include "stm32f10x_rcc.h"
 #include "circle_api.h"
 
 #define TX_BUFFER_LEN 128
@@ -17,8 +32,6 @@
 #define USARTx USART1
 
 
-//#def USE_SPI //Uncomment to use SPI instead of IR
-#define USE_IR
 
 
 #define TICK_PACKET_RX 1

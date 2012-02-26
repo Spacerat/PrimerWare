@@ -6,7 +6,9 @@
 *******************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
-#include "circle_api.h"
+
+
+
 #include "stm32f10x.h"
 #include "Application.h"
 #include "MenuHandler.h"
@@ -17,7 +19,7 @@
 #include "GameHandler.h"
 #include "GamesList.h"
 #include "Touchscreen.h"
-
+#include "circle_api.h"
 
 /* Private defines -----------------------------------------------------------*/
 
