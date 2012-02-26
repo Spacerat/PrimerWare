@@ -88,10 +88,13 @@ enum MENU_code Application_Handler(void)
 	
 	// Make sure the timers count up!
 	TIMER_tickTimers();
-		
+	
 	if (screen == display_Menu) {
 		enum MenuCode menuCode = MENUHANDLER_run(); // Handle menu and get code.
 		
+		//Net code!
+		
+	
 		// If we have chosen a game type...
 		if (menuCode != MenuCode_Nothing) {			
 			// Pupulate minigame array.

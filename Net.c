@@ -28,7 +28,8 @@ CircularBuffer TXbuffer;
 u8 RXbuffer[PACKET_MAX_SIZE + 1];
 u8 RXbufferIndex = 0;
 
-
+static u8 lastpacket_type;
+static bool clear_RX_buffer_at_next_tick = 1;
 
 #ifdef USE_SPI
 
@@ -169,7 +170,7 @@ void RCC_Configuration(void)
 	//RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);
 }
 
-void NetSetup(void)
+void NET_Setup(void)
 {
 	cbInit(&TXbuffer, TX_BUFFER_LEN);
 	RCC_Configuration();
@@ -187,7 +188,7 @@ transmission queue.
 
 Returns 1 if there is no null character in the packet data (overflow).
 */
-int TransmitBytes(Packet * packet)
+int NET_TransmitBytes(Packet * packet)
 {
 	cbWrite(&TXbuffer, PACKET_BEGIN);
 	cbWrite(&TXbuffer, packet->type);
@@ -203,40 +204,61 @@ int TransmitBytes(Packet * packet)
 	
 }
 
+/* Copy the data section of the RX buffer in to another buffer.
+   Set the "type" parameter to the packet ID.
+   Return the length of the data.
+*/
+u8 NET_GetPacketData(u8 * type, u8 * buffer) {
+	*type = lastpacket_type;
+	strcpy(buffer, RXbuffer + 2);
+	return (u8)strlen(buffer + 2);
+}
+
 //Send/Recieve IR packets.
 /*
 Return value may include a number of flags:
 - IR_PACKET_RX: A packet has been received
 - IR_TX_EMPTY: There is no more data to send
 */
-u8 NetTick(net_rx_callback callback)
+u8 NET_NetTick(void)
 {
+	//If a packet was received last tick, it should have been dealt with by now.
+	//discard it from memory
+	if (clear_RX_buffer_at_next_tick) {
+		for (i = 0; i < PACKET_MAX_SIZE + 2; i++) {
+			RXbuffer[i] = '\0';
+		}
+		clear_RX_buffer_at_next_tick = false;
+		lastpacket_type = 0;
+	}
+
 	//Send any data sitting in the buffer.
 	if (!cbIsEmpty(&TXbuffer) && ((GetFlagStatus(FLAG_TXE) != RESET))) {
 		char data;
 		cbRead(&TXbuffer, &data);
 		SendData((u8)data);
 	}
-	
+
+
 	//Recieve data
 	if (GetFlagStatus(FLAG_RXNE) == SET) {
 		u8 ReceivedData = ReceiveData();
 		RXbuffer[RXbufferIndex++] = ReceivedData;
 		u8 overflow;
+	
 		if (ReceivedData == '\0' || (overflow = (RXbufferIndex == PACKET_MAX_SIZE + 2))) {
-			u8 flags = 0;
+			u8 flags = RX_FLAG_RECEIVED;
 			//0xFF is expected as the first value
 			if (RXbuffer[0] != 0xFF) {
 				flags |= RX_FLAG_BADHEADER;
 			}
 			if (overflow) {
 				flags |= RX_FLAG_OVERFLOW;
+				RXbuffer[PACKET_MAX_SIZE + 1] = '\0';
 			}
 			
-			u8 type = RXbuffer[1];
-			u8 * data;
-			data = RXbuffer + 2;
-			callback(type, data, flags);
+			lastpacket_type = RXbuffer[1];
+			clear_RX_buffer_at_next_tick = true;
 		}
 	}
 

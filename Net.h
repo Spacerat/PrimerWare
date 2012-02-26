@@ -10,6 +10,7 @@
 //Packet handler flags
 #define RX_FLAG_BADHEADER 1
 #define RX_FLAG_OVERFLOW 2
+#define RX_FLAG_RECEIVED 4
 
 //Hardware settings
 #define SPIx SPI1
@@ -24,7 +25,7 @@
 #define TICK_DATA_TX 2
 
 
-typedef void (*net_rx_callback)(u8 packet_type, u8 * packet_data, u8 flags);
+
 
 typedef struct _Packet {
 	u8 type;
@@ -32,10 +33,10 @@ typedef struct _Packet {
 } Packet;
 
 
-void NetSetup(void);
-u8 NetTick(net_rx_callback callback);
-int TransmitBytes(Packet * packet);
-
+void NET_Setup(void);
+u8 NET_NetTick(void);
+int NET_TransmitBytes(Packet * packet);
+u8 NET_GetPacketData(u8 * type, u8 * buffer);
 
 
 #endif
