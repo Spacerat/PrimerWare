@@ -13,8 +13,7 @@
 struct TouchEvent TOUCH_clickEvent(void) {
 	struct TouchEvent touchEvent;
 	static bool lastTouch = 0;
-	u16 clickPosition = 0;
-	
+
 	if (TOUCHSCR_IsPressed())
 		if (lastTouch) {
 			lastTouch = 1;
@@ -32,7 +31,7 @@ struct TouchEvent TOUCH_clickEvent(void) {
 			touchEvent.type = TouchType_StillDepressed;
 		}
 		
-	touchEvent.position = clickPosition;
+	touchEvent.position = TOUCHSCR_GetPos();
 		
 	return touchEvent;
 }
