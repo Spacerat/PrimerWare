@@ -78,7 +78,7 @@ enum MENU_code Application_Handler(void)
 													   // minigames.
 	static int currentMinigame = 0; // Index in the array of the current 
 									// pointer.
-	static int score = 0; // Current total score.
+	static int score = 100; // Current total score.
 	static int lives = 3; // Number of lives remaining.
 	static int amServer = 0; // Am I the server (multiplayer only of course)?
 	const unsigned int stageScreenTimerValue = 200; // Timer value for stage
@@ -164,12 +164,13 @@ enum MENU_code Application_Handler(void)
 		
 		if (TIMER_checkTimer(0)) {
 			TIMER_disableTimer(0);
-			screen = display_StageStart;
-		}
-		
-		// Check if we need to end.
+			
+			// Check if we need to end the round.
 			if (lives == 0 || currentMinigame == ROUNDLENGTH)
 				screen = display_RoundFinish;
+			else
+				screen = display_StageStart;
+		}
 	} else if (screen == display_StageFail) {
 		if (!TIMER_isEnabled(0)) {
 			TIMER_initTimer(0, stageScreenTimerValue);
@@ -178,17 +179,18 @@ enum MENU_code Application_Handler(void)
 		
 		if (TIMER_checkTimer(0)) {
 			TIMER_disableTimer(0);
-			screen = display_StageStart;
-		}
-		
-		// Check if we need to end.
+			
+			// Check if we need to end the round.
 			if (lives == 0 || currentMinigame == ROUNDLENGTH)
 				screen = display_RoundFinish;
+			else
+				screen = display_StageStart;
+		}
 	} else if (screen == display_RoundFinish) {
 		static bool screenDrawn = 0;
 		
 		if (!screenDrawn) {
-			GAMEDRAW_roundFinished(score, lives);
+			GAMEDRAW_roundFinished(133, 2);
 			screenDrawn = 1;
 		}
 		
