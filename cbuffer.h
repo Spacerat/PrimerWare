@@ -1,17 +1,15 @@
-/* Circular buffer, taken from an example on wikipedia
-http://en.wikipedia.org/w/index.php?title=Circular_buffer&oldid=474915405
-
-
-*/
+-/* Circular buffer, taken and modified from an example on wikipedia
+-http://en.wikipedia.org/w/index.php?title=Circular_buffer&oldid=474915405
+-*/
 
 #ifndef CIRCLE_BUFFER_LIB_H_GUARD
 #define CIRCLE_BUFFER_LIB_H_GUARD
 
-#include <stdio.h>
+#include "circle_api.h"
 #include <malloc.h>
 
 /* Opaque buffer element type.  This would be defined by the application. */
-typedef buff_t u8;
+typedef u8 buff_t;
 
 /* Circular buffer object */
 typedef struct {
@@ -28,7 +26,7 @@ int cbIsFull(CircularBuffer *cb);
 int cbIsEmpty(CircularBuffer *cb);
 /* Write an element, overwriting oldest element if buffer is full. App can
 choose to avoid the overwrite by checking cbIsFull(). */
-void cbWrite(CircularBuffer *cb, buff_t *elem);
+void cbWrite(CircularBuffer *cb, buff_t elem);
 /* Read oldest element. App must ensure !cbIsEmpty() first. */
 void cbRead(CircularBuffer *cb, buff_t *elem);
 
