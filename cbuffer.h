@@ -1,6 +1,6 @@
--/* Circular buffer, taken and modified from an example on wikipedia
--http://en.wikipedia.org/w/index.php?title=Circular_buffer&oldid=474915405
--*/
+/* Circular buffer, taken and modified from an example on wikipedia
+http://en.wikipedia.org/w/index.php?title=Circular_buffer&oldid=474915405
+*/
 
 #ifndef CIRCLE_BUFFER_LIB_H_GUARD
 #define CIRCLE_BUFFER_LIB_H_GUARD

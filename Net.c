@@ -1,16 +1,7 @@
 
 #include "Net.h"
 
-#include "misc.h"
-#include "stm32f10x_conf.h"
-#include "stm32f10x_gpio.h"
-#include "stm32f10x_rcc.h"
-#ifdef USE_SPI
-	#include "stm32f10x_spi.h"
-#endif
-#ifdef USE_IR
-	#include "stm32f10x_usart.h"
-#endif
+
 #include "cbuffer.h"
 
 
