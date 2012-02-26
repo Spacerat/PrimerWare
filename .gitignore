@@ -9,6 +9,7 @@
 *.lib
 *.bat
 *.lst
+*.o
 *~
 
 *stm32f10x*
