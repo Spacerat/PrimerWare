@@ -9,9 +9,10 @@
 
 #define TIMER_NOTIMERS 10
 
-static unsigned int timers[TIMER_NOTIMERS]; // Array of ints to hold timer values.
-// Is the timer enabled?
-static bool timerActive[TIMER_NOTIMERS];
+
+static unsigned int timers[TIMER_NOTIMERS]; // Array of ints to hold timer 
+											// values.
+static bool timerActive[TIMER_NOTIMERS]; // Is the timer enabled?
 static unsigned int timerMax[TIMER_NOTIMERS]; // What is the trigger number?
 
 void TIMER_initTimer(unsigned int timerNo, unsigned int timerMaxVal) {
@@ -22,6 +23,10 @@ void TIMER_initTimer(unsigned int timerNo, unsigned int timerMaxVal) {
 
 bool TIMER_checkTimer(unsigned int timerNo) {
 	return timers[timerNo] >= timerMax[timerNo];
+}
+
+unsigned int TIMER_ticksLeft(unsigned int timerNo) {
+	return TIMER_checkTimer(timerNo) ? 0 : timerMax[timerNo] - timers[timerNo];
 }
 
 void TIMER_tickTimers(void) {

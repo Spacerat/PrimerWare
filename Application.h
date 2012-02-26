@@ -1,15 +1,12 @@
 #ifndef APPLICATION_H_GUARD
 #define APPLICATION_H_GUARD
-enum GameStatusCode {
-	gameStatus_InProgress = 0,
-	gameStatus_Success = 1,
-	gameStatus_Fail = 2
+enum CurrentDisplay {
+	display_Menu = 0,
+	display_StageStart = 1,
+	display_Game = 2,
+	display_StageSuccess = 3,
+	display_StageFail = 4,
+	display_RoundFinish = 5
 };
 
-struct GameStatus {
-	enum GameStatusCode code;
-	int score;
-};
-
-typedef struct GameStatus (*gameRunFunction)(void);
 #endif
