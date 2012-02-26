@@ -8,6 +8,7 @@
 #include "misc.h"
 #include "stm32f10x_conf.h"
 #include "stm32f10x_gpio.h"
+#include "Packets.h"
 
 #ifdef USE_SPI
 	#include "stm32f10x_spi.h"
@@ -36,16 +37,6 @@
 #define SPIx SPI1
 #define USARTx USART1
 
-enum PacketTypes {
-	PACKET_NULL = 0,
-	/* --- Menu packets --- */
-	PACKET_requestGame,
-	PACKET_ACKGame,
-
-	/* --- Game packets --- */
-	PACKET_gameData
-	
-};
 
 
 #define TICK_PACKET_RX 1

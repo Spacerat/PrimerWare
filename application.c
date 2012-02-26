@@ -21,6 +21,7 @@
 #include "Touchscreen.h"
 #include "circle_api.h"
 
+
 /* Private defines -----------------------------------------------------------*/
 
 // The following should be the minimal CircleOS version needed by your 
@@ -71,6 +72,16 @@ void startMinigames(gameRunFunction* theMinigames) {
 		minigameArray[i] = theMinigames[rand_cmwc() % ROUNDLENGTH];
 }
 
+#define PACKETDATA_REQUESTGAME_COOP "coop"
+#define PACKETDATA_REQUESTGAME_VERSUS "versus"
+
+void Transmit_RequestGame(bool isCoOp) {
+	if (isCoOp == TRUE)
+		NET_TransmitStringPacket(PACKET_requestGame, PACKETDATA_REQUESTGAME_COOP);
+	else
+		NET_TransmitStringPacket(PACKET_requestGame, PACKETDATA_REQUESTGAME_VERSUS);
+}
+
 /*******************************************************************************
 * Function Name  : Application_Handler
 * Description    : Management of the Circle_App. This function will be called
@@ -97,6 +108,7 @@ enum MENU_code Application_Handler(void)
 	static int amServer = 0; // Am I the server (multiplayer only of course)?
 	const unsigned int stageScreenTimerValue = 200; // Timer value for stage
 													// screens.
+	static bool gameRequested = FALSE; //Did we just request a game?
 	
 	NET_Setup(); //Calling this multiple times does nothing.
 	
@@ -113,18 +125,45 @@ enum MENU_code Application_Handler(void)
 			NET_GetPacketData(&type, buffer);
 			switch (type) {
 				case PACKET_requestGame:
-					NET_TransmitStringPacket(PACKET_ACKGame, "ack");
+					//Other player has requested a game.
+					//Send the data back as an ACK
+					NET_TransmitStringPacket(PACKET_ACKGame, buffer);
 					break;
 				case PACKET_ACKGame:
-					if (strcmp(buffer, "coop") == 0) {
-						//We have sent a coop request and received the ACK.
-						//We are the host.
+					if (gameRequested == FALSE) {
+						//Master sent slave an ACK, slave now begins.
+						gamedata.isHost = FALSE;
+						screen = display_StageStart;
+					}
+
+					else {
+						//Slave sent master an ACK, master should begin in roughly 8 ticks...
+						//And also complete the handshake.
+						gamedata.isHost = TRUE;
+						NET_TransmitStringPacket(PACKET_ACKGame, buffer);
+						TIMER_initTimer(0, 8);
+					}
+					
+					if (strcmp(buffer, PACKETDATA_REQUESTGAME_COOP) == 0) {
 						startMinigames(minigamesCoOp);
 						gamedata.mode = Game_CoOp;
-						gamedata.isHost = TRUE;
-					};
+					}
+					else if (strcmp(buffer, PACKETDATA_REQUESTGAME_VERSUS) == 0) {
+						startMinigames(minigamesVs);
+						gamedata.mode = Game_Vs;
+					}
 					break;
 			}
+		}
+	
+		if (TIMER_checkTimer(0)) {
+			/*
+			The master has waited for the roughly 8 ticks it should take to send 
+			an ACK to the slave, so begins the game. Thus they (theoretically) 
+			start at the same time.
+			*/
+			TIMER_disableTimer(0);
+			screen = display_StageStart;
 		}
 	
 		// If the button is pressed, the application is exited
@@ -134,7 +173,7 @@ enum MENU_code Application_Handler(void)
 		}
 		// If we have chosen a game type...
 		if (menuCode != MenuCode_Nothing) {			
-			// Pupulate minigame array.
+			// Populate minigame array.
 			init_rand(123);
 			
 			if (menuCode == MenuCode_SinglePlayer) {
@@ -145,9 +184,12 @@ enum MENU_code Application_Handler(void)
 			}
 			else if (menuCode == MenuCode_TwoPlayerCoOp) {
 				//If multiplayer, send a request and wait for an ACK
-				NET_TransmitStringPacket(PACKET_requestGame,  "coop");
+				Transmit_RequestGame(TRUE);
+				gameRequested = TRUE;
 			}
 			else {
+				Transmit_RequestGame(FALSE);
+				gameRequested = TRUE;
 				//theMinigames = minigamesVs;
 				//gamedata.mode = Game_Vs;
 			}
@@ -228,12 +270,14 @@ enum MENU_code Application_Handler(void)
 		
 		if (TOUCH_clickEvent().type == TouchType_Depressed) {
 			MENUHANDLER_setDrawn(FALSE);
+			//Reset *everything*
 			screen = display_Menu;
 			gamedata.mode = Game_None;
 			lives = 3;
 			score = 0;
 			currentMinigame = 0;
 			screenDrawn = 0;
+			gameRequested = FALSE;
 		}
 	}
 		
