@@ -12,20 +12,20 @@
 
 
 
-void assert_failed(u8* file, u32 line) {}  // Required by libraries. WE don't bother to handle it.
+void assert_failed(u8* file, u32 line) {}  // Required by libraries.
 
 tHandler OldHandler; // I have no idea what this is for
 
-CircularBuffer TXbuffer;
-u8 RXbuffer[PACKET_MAX_SIZE + 1];
-u8 RXbufferIndex = 0;
+CircularBuffer TXbuffer;           //Stores all data to be transmitted
 
-static u8 lastpacket_type;
+u8 RXbuffer[PACKET_MAX_SIZE + 1];  //Stores all received packet data
+u8 RXbufferIndex = 0;              //Counts data in the RX buffer
+static u8 lastpacket_type;         //This is set when the last packet is received
+
 static bool clear_RX_buffer_at_next_tick = TRUE;
 
-#ifdef USE_SPI
+#ifdef USE_SPI //To facilitate switching between communication protocals... Yay macros!
 
-//To facilitate switching between communication protocals if needed...
 #define GetFlagStatus(flag) SPI_I2S_GetFlagStatus(SPIx, flag)
 #define SendData(data) SPI_I2S_SendData(SPIx, data)
 #define ReceiveData() SPI_I2S_ReceiveData(SPIx)
@@ -43,12 +43,10 @@ static bool clear_RX_buffer_at_next_tick = TRUE;
 
 #endif
 
-/*Configuration things */
+/* ----------------- Configuration things ---------------- */
 
-//Configure GPIO
-/*
-Taken from SPI CRC Example
-*/
+/* Configure GPIO
+Taken from SPI CRC Example */
 void GPIO_Configuration(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -65,11 +63,8 @@ void GPIO_Configuration(void)
 }
 
 
-//Configure SPI
-/*
-Taken from SPI CRC Example
-*/
-
+/* Configure SPI or IrDA interface.
+Taken from SPI CRC and IrDA examples. */
 void Net_Configuration(void)
 {
 #ifdef USE_SPI
@@ -144,11 +139,11 @@ void Net_Configuration(void)
 
 #endif
 }
-//Configure Clock
-/*
-Taken from SPI CRC Example
-*/
-void RCC_Configuration(void)
+
+
+/* Configure Clock
+Taken from SPI CRC Example */
+void NET_RCC_Configuration(void)
 {
 	/* PCLK2 = HCLK/2 */
 	//RCC_PCLK2Config(RCC_HCLK_Div2);
@@ -162,25 +157,33 @@ void RCC_Configuration(void)
 	//RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);
 }
 
+/* Call this once to set up the networking code.
+Call it twice to do absolutely nothing extra */
 void NET_Setup(void)
 {
-	cbInit(&TXbuffer, TX_BUFFER_LEN);
-	RCC_Configuration();
-	
-	GPIO_Configuration();
-	Net_Configuration();
+	static bool issetup = FALSE;
+	if (issetup == FALSE)
+	{
+		cbInit(&TXbuffer, TX_BUFFER_LEN);
+		
+		GPIO_Configuration();
+		Net_Configuration();
+		issetup = TRUE;
+	}
 }
 
 
+/* ----------------------- Functions that do things ------------------------ */
 
-//Send a string to the IR library for transmission.
-/*
+
+/* Send a packet struct to the IR library for transmission.
+
 Creates a packet from the given data and data length, then adds this to the 
 transmission queue.
 
 Returns 1 if there is no null character in the packet data (overflow).
 */
-int NET_TransmitBytes(Packet * packet)
+int NET_TransmitPacket(struct Packet * packet)
 {
 	cbWrite(&TXbuffer, PACKET_BEGIN);
 	cbWrite(&TXbuffer, packet->type);
@@ -189,6 +192,29 @@ int NET_TransmitBytes(Packet * packet)
 	for (k = 0; k < PACKET_MAX_SIZE; k++) {
 		cbWrite(&TXbuffer, (buff_t)packet->data[k]);
 		if (packet->data[k] == '\0') {
+			return 0;
+		}
+	}
+	return 1;
+	
+}
+
+/* Send a string to the IR library for transmission.
+
+Creates a packet from the given data and data length, then adds this to the 
+transmission queue.
+
+Returns 1 if there is no null character in the packet data (overflow).
+*/
+int NET_TransmitStringPacket(u8 type, char * string)
+{
+	cbWrite(&TXbuffer, PACKET_BEGIN);
+	cbWrite(&TXbuffer, type);
+
+	int k;
+	for (k = 0; k < PACKET_MAX_SIZE; k++) {
+		cbWrite(&TXbuffer, (buff_t)string[k]);
+		if (string[k] == '\0') {
 			return 0;
 		}
 	}
@@ -212,17 +238,18 @@ Return value may include a number of flags:
 - IR_PACKET_RX: A packet has been received
 - IR_TX_EMPTY: There is no more data to send
 */
-u8 NET_NetTick(void)
+u8 NET_Tick(void)
 {
+	u8 flags = 0;
 	//If a packet was received last tick, it should have been dealt with by now.
 	//discard it from memory
 	if (clear_RX_buffer_at_next_tick) {
 		int i;
-		for (i = 0; i < PACKET_MAX_SIZE + 2; i++) {
+		for (i = 0; i < PACKET_TOTAL_SIZE; i++) {
 			RXbuffer[i] = '\0';
 		}
 		clear_RX_buffer_at_next_tick = FALSE;
-		lastpacket_type = 0;
+		lastpacket_type = PACKET_NULL;
 	}
 
 	//Send any data sitting in the buffer.
@@ -230,6 +257,7 @@ u8 NET_NetTick(void)
 		char data;
 		cbRead(&TXbuffer, &data);
 		SendData((u8)data);
+		flags |= NETTICK_FLAG_TX;
 	}
 
 
@@ -239,14 +267,14 @@ u8 NET_NetTick(void)
 		RXbuffer[RXbufferIndex++] = ReceivedData;
 		u8 overflow;
 	
-		if (ReceivedData == '\0' || (overflow = (RXbufferIndex == PACKET_MAX_SIZE + 2))) {
-			u8 flags = RX_FLAG_RECEIVED;
+		if (ReceivedData == '\0' || (overflow = (RXbufferIndex == PACKET_TOTAL_SIZE))) {
+			flags |= NETTICK_FLAG_RX;
 			//0xFF is expected as the first value
 			if (RXbuffer[0] != 0xFF) {
-				flags |= RX_FLAG_BADHEADER;
+				flags |= NETTICK_FLAG_BADHEADER;
 			}
 			if (overflow) {
-				flags |= RX_FLAG_OVERFLOW;
+				flags |= NETTICK_FLAG_OVERFLOW;
 				RXbuffer[PACKET_MAX_SIZE + 1] = '\0';
 			}
 			
