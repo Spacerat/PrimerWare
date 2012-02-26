@@ -11,7 +11,7 @@
 #include "minigames/tappy.h"
 
 
-gameRunFunction minigamesSinglePlayer[] = { minigame_tappy };
+gameRunFunction minigamesSinglePlayer[] = { testRun1 };
 gameRunFunction minigamesCoOp[] = { minigame_tappy };
 gameRunFunction minigamesVs[] = { minigame_tappy};
 

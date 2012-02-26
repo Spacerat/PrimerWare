@@ -153,9 +153,6 @@ enum MENU_code Application_Handler(void)
 				screen = display_StageFail;
 			}
 			
-			// Check if we need to end.
-			if (lives == 0 || currentMinigame == ROUNDLENGTH)
-				screen = display_RoundFinish;
 			gamedata.code = gameStatus_InProgress;
 			gamedata.score = 0;
 		}
@@ -169,6 +166,10 @@ enum MENU_code Application_Handler(void)
 			TIMER_disableTimer(0);
 			screen = display_StageStart;
 		}
+		
+		// Check if we need to end.
+			if (lives == 0 || currentMinigame == ROUNDLENGTH)
+				screen = display_RoundFinish;
 	} else if (screen == display_StageFail) {
 		if (!TIMER_isEnabled(0)) {
 			TIMER_initTimer(0, stageScreenTimerValue);
@@ -179,6 +180,10 @@ enum MENU_code Application_Handler(void)
 			TIMER_disableTimer(0);
 			screen = display_StageStart;
 		}
+		
+		// Check if we need to end.
+			if (lives == 0 || currentMinigame == ROUNDLENGTH)
+				screen = display_RoundFinish;
 	} else if (screen == display_RoundFinish) {
 		static bool screenDrawn = 0;
 		

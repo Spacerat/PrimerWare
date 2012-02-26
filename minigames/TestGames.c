@@ -34,7 +34,7 @@ void testRun1(struct GameData * data) {
 	// END TIMING CODE!
 	
 	if (TOUCH_clickEvent().type == TouchType_Depressed)
-		data->code = gameStatus_Success;
+		data->code = gameStatus_Fail;
 
 }
 
