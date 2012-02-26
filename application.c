@@ -95,8 +95,12 @@ enum MENU_code Application_Handler(void)
 		enum MenuCode menuCode = MENUHANDLER_run(); // Handle menu and get code.
 		
 		//Net code!
-		
 	
+		// If the button is pressed, the application is exited
+		if (BUTTON_GetState() == BUTTON_PUSHED) {
+			BUTTON_WaitForRelease();
+			return MENU_Quit();
+		}
 		// If we have chosen a game type...
 		if (menuCode != MenuCode_Nothing) {			
 			// Pupulate minigame array.
@@ -208,11 +212,7 @@ enum MENU_code Application_Handler(void)
 		}
 	}
 		
-    // If the button is pressed, the application is exited
-    if (BUTTON_GetState() == BUTTON_PUSHED) {
-        BUTTON_WaitForRelease();
-        return MENU_Quit();
-    }
+
 
     return MENU_CONTINUE;   // Returning MENU_LEAVE will quit to CircleOS
 }
