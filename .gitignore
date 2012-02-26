@@ -8,6 +8,9 @@
 *.rprj
 *.lib
 *.bat
+*.elf
+*.map
+*.hex
 *.lst
 *.o
 *~
