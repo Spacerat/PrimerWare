@@ -21,6 +21,7 @@ void MENUDRAW_setupDrawing(void) {
 
 void MENUDRAW_drawMenu(void) {
 	MENUDRAW_setupDrawing();
+	DRAW_Clear();
 	MENUDRAW_drawTitle();
 	MENUDRAW_drawPlayersMenu();
 }

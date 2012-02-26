@@ -72,7 +72,8 @@ enum MENU_code Application_Handler(void)
 	// State for the game handler.
 	static enum CurrentDisplay screen; // Where are we?!
 	
-	static struct GameData gamedata; //Things the minigames need to know (e.g. are we multiplayer?)
+	static struct GameData gamedata; // Things the minigames need to know
+									 // (e.g. are we multiplayer?)
 	
 	static gameRunFunction minigameArray[ROUNDLENGTH]; // Holds current 
 													   // minigames.
@@ -143,7 +144,6 @@ enum MENU_code Application_Handler(void)
 		}
 	} else if (screen == display_Game) {
 		// Run the current game and get its status.
-		
 		minigameArray[currentMinigame](&gamedata);
 			
 		// If the game has finished...
@@ -158,6 +158,7 @@ enum MENU_code Application_Handler(void)
 				screen = display_StageFail;
 			}
 			
+			// Reset gamedata for next game.
 			gamedata.code = gameStatus_InProgress;
 			gamedata.score = 0;
 		}
@@ -169,12 +170,13 @@ enum MENU_code Application_Handler(void)
 		
 		if (TIMER_checkTimer(0)) {
 			TIMER_disableTimer(0);
-			screen = display_StageStart;
-		}
-		
-		// Check if we need to end.
+			
+			// Check if we need to end the round.
 			if (lives == 0 || currentMinigame == ROUNDLENGTH)
 				screen = display_RoundFinish;
+			else
+				screen = display_StageStart;
+		}
 	} else if (screen == display_StageFail) {
 		if (!TIMER_isEnabled(0)) {
 			TIMER_initTimer(0, stageScreenTimerValue);
@@ -183,12 +185,13 @@ enum MENU_code Application_Handler(void)
 		
 		if (TIMER_checkTimer(0)) {
 			TIMER_disableTimer(0);
-			screen = display_StageStart;
-		}
-		
-		// Check if we need to end.
+			
+			// Check if we need to end the round.
 			if (lives == 0 || currentMinigame == ROUNDLENGTH)
 				screen = display_RoundFinish;
+			else
+				screen = display_StageStart;
+		}
 	} else if (screen == display_RoundFinish) {
 		static bool screenDrawn = 0;
 		
@@ -203,6 +206,7 @@ enum MENU_code Application_Handler(void)
 			lives = 3;
 			score = 0;
 			currentMinigame = 0;
+			screenDrawn = 0;
 		}
 	}
 		
