@@ -114,12 +114,13 @@ enum MENU_code Application_Handler(void)
 	
 	// Make sure the timers count up!
 	TIMER_tickTimers();
+	NET_Tick();
 	
 	if (screen == display_Menu) {
 		enum MenuCode menuCode = MENUHANDLER_run(); // Handle menu and get code.
 	
 		//Recieve data - check if someone wants to start a game with us.
-		if (NET_Tick() & NETTICK_FLAG_RX) {
+		if (NET_GetFlags() & NETTICK_FLAG_RX) {
 			u8 type;
 			u8 buffer[PACKET_MAX_SIZE];
 			NET_GetPacketData(&type, buffer);
@@ -212,6 +213,11 @@ enum MENU_code Application_Handler(void)
 		}
 	} else if (screen == display_Game) {
 		// Run the current game and get its status.
+	
+		/*
+		TODO:: IF WE ARE THE SLAVE, INTERCEPT "YOU WIN/LOSE!" PACKETS HERE
+		       IF WE ARE THE MASTER, SEND THEM BASED ON THE GAME STATUS
+		*/
 		minigameArray[currentMinigame](&gamedata);
 			
 		// If the game has finished...
