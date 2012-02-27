@@ -157,7 +157,7 @@ enum MENU_code Application_Handler(void)
 			}
 		}
 	
-		if (TIMER_checkTimer(0)) {
+		if (TIMER_checkTimer(0) && TIMER_isEnabled(0) && gameRequested == TRUE) {
 			/*
 			The master has waited for the roughly 8 ticks it should take to send 
 			an ACK to the slave, so begins the game. Thus they (theoretically) 
