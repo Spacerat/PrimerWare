@@ -219,7 +219,9 @@ enum MENU_code Application_Handler(void)
 		
 		if (TIMER_checkTimer(0)) {
 			TIMER_disableTimer(0);
+			//Begin the game and allow it to run.
 			screen = display_Game;
+			gamedata.code = gameStatus_InProgress;
 		}
 	} else if (screen == display_Game) {
 		// Run the current game and get its status.
@@ -229,7 +231,7 @@ enum MENU_code Application_Handler(void)
 		       IF WE ARE THE MASTER, SEND THEM BASED ON THE GAME STATUS
 		*/
 		
-		if (gamedata.code = gameStatus_InProgress) {
+		if (gamedata.code == gameStatus_InProgress) {
 			minigameArray[currentMinigame](&gamedata);
 		}
 	
@@ -258,7 +260,7 @@ enum MENU_code Application_Handler(void)
 				lives--;
 				screen = display_StageFail;
 			}
-			
+			gamesPlayed ++;
 			gamedata.code = gameStatus_InProgress;
 			gamedata.score = 0;
 		}
@@ -281,7 +283,7 @@ enum MENU_code Application_Handler(void)
 				TIMER_disableTimer(0);
 				
 				// Check if we need to end the round.
-				if (lives == 0 || currentMinigame == ROUNDLENGTH)
+				if (lives == 0 || gamesPlayed == ROUNDLENGTH)
 					screen = display_RoundFinish;
 				else
 					screen = display_StageStart;
