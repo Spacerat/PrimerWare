@@ -228,7 +228,6 @@ int NET_TransmitStringPacket(u8 type, char * string)
    Return the length of the data.
 */
 u8 NET_GetPacketData(u8 * buffer) {
-	*type = lastpacket_type;
 	strcpy(buffer, RXbuffer + 2);
 	return (u8)strlen(buffer + 2);
 }

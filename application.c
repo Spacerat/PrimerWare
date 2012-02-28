@@ -157,7 +157,7 @@ enum MENU_code Application_Handler(void)
 						gamedata.mode = Game_CoOp;
 					}
 					else if (strcmp(buffer, PACKETDATA_REQUESTGAME_VERSUS) == 0) {
-						startMinigames(minigamesVsm, NUMVSGAMES);
+						startMinigames(minigamesVs, NUMVSGAMES);
 						gamedata.mode = Game_Vs;
 					}
 					break;
@@ -244,9 +244,8 @@ enum MENU_code Application_Handler(void)
 				case PACKET_gameFail:
 					gamedata.code = gameStatus_Fail;
 					break;
+			}
 		}
-	
-		
 			
 		// If the game has finished...
 		if (gamedata.code != gameStatus_InProgress) {
@@ -310,8 +309,6 @@ enum MENU_code Application_Handler(void)
 		}
 	}
 		
-
-
     return MENU_CONTINUE;   // Returning MENU_LEAVE will quit to CircleOS
 }
 
