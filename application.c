@@ -56,11 +56,12 @@ enum MENU_code Application_Ini(void) {
 	LCD_SetRotateScreen(0);
     
     // Set speed.
-	UTIL_SetPll(SPEED_VERY_HIGH);
+	
     MENU_SetAppliDivider(10);
 
 	NET_RCC_Configuration();
 
+	UTIL_SetPll(SPEED_VERY_HIGH);
     return MENU_CONTINUE_COMMAND;
     }
 

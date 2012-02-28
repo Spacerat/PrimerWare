@@ -10,7 +10,7 @@
 
 #define PACKET_BEGIN 0xFF
 
-
+#define USE_IR//This needs to be declared again in here for some reason.
 
 void assert_failed(u8* file, u32 line) {}  // Required by libraries.
 
@@ -18,10 +18,13 @@ tHandler OldHandler; // I have no idea what this is for
 
 CircularBuffer TXbuffer;           //Stores all data to be transmitted
 
-u8 RXbuffer[PACKET_MAX_SIZE + 1];  //Stores all received packet data
+u8 RXbuffer[PACKET_TOTAL_SIZE];  //Stores all received packet data
 u8 RXbufferIndex = 0;              //Counts data in the RX buffer
 static u8 lastpacket_type;         //This is set when the last packet is received
 static u8 net_flags = 0;
+
+#define send_delay 12;
+static u16 send_countdown = send_delay;
 
 static bool clear_RX_buffer_at_next_tick = TRUE;
 
@@ -35,7 +38,7 @@ static bool clear_RX_buffer_at_next_tick = TRUE;
 
 #endif
 #ifdef USE_IR
-
+#warning IR enabled
 #define GetFlagStatus(flag) USART_GetFlagStatus(USARTx, flag)
 #define SendData(data) USART_SendData(USARTx, data)
 #define ReceiveData() USART_ReceiveData(USARTx)
@@ -50,8 +53,9 @@ static bool clear_RX_buffer_at_next_tick = TRUE;
 Taken from SPI CRC Example */
 void GPIO_Configuration(void)
 {
+
 	GPIO_InitTypeDef GPIO_InitStructure;
-	
+#ifdef USE_SPI
 	/* Configure SPI1 pins: SCK, MISO and MOSI ---------------------------------*/
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -61,6 +65,25 @@ void GPIO_Configuration(void)
 	/* Configure SPI2 pins: SCK, MISO and MOSI ---------------------------------*/
 	//GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
 	//GPIO_Init(GPIOB, &GPIO_InitStructure);
+#endif
+#ifdef USE_IR
+    /* Configure USART1 Tx (PA.9)as alternate function push-pull */
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    /* Configure USART1 Rx PA.10 as input floating */
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    /* Configure GPIO_D Pin 8 = CS Irda */
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init(GPIOD, &GPIO_InitStructure);
+#endif
 }
 
 
@@ -148,12 +171,21 @@ void NET_RCC_Configuration(void)
 {
 	/* PCLK2 = HCLK/2 */
 	//RCC_PCLK2Config(RCC_HCLK_Div2);
-	
+#ifdef USE_SPI
 	/* Enable peripheral clocks --------------------------------------------------*/
 	/* GPIOA, GPIOB and SPI1 clock enable */
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |
 	RCC_APB2Periph_SPI1, ENABLE);
-	
+#endif
+#ifdef USE_IR
+
+    //Enable clock
+    RCC_APB2PeriphClockCmd(
+        RCC_APB2Periph_GPIOD | 
+        RCC_APB2Periph_AFIO | 
+        RCC_APB2Periph_USART1, ENABLE);
+
+#endif
 	/* SPI2 Periph clock enable */
 	//RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);
 }
@@ -250,14 +282,15 @@ Return value may include a number of flags:
 */
 u8 NET_Tick(void)
 {
-	
+
 	//If a packet was received last tick, it should have been dealt with by now.
 	//discard it from memory
-	if (clear_RX_buffer_at_next_tick) {
-		int i;
-		for (i = 0; i < PACKET_TOTAL_SIZE; i++) {
-			RXbuffer[i] = '\0';
-		}
+	if (clear_RX_buffer_at_next_tick == TRUE) {
+		u8 i;
+		//for (i = 0; i < 3; i++) {
+		//	RXbuffer[i] = (u8)'\0';
+		//}
+		RXbufferIndex = 0;
 		clear_RX_buffer_at_next_tick = FALSE;
 		lastpacket_type = PACKET_NULL;
 		net_flags = 0;
@@ -265,10 +298,16 @@ u8 NET_Tick(void)
 
 	//Send any data sitting in the buffer.
 	if (!cbIsEmpty(&TXbuffer) && ((GetFlagStatus(FLAG_TXE) != RESET))) {
-		char data;
-		cbRead(&TXbuffer, &data);
-		SendData((u8)data);
-		net_flags |= NETTICK_FLAG_TX;
+		if (send_countdown == 0) {
+			char data;
+			cbRead(&TXbuffer, &data);
+			SendData((u8)data);
+			net_flags |= NETTICK_FLAG_TX;
+			send_countdown = send_delay;
+		}
+		else {
+			send_countdown --;
+		}
 	}
 
 	//Recieve data
@@ -294,3 +333,4 @@ u8 NET_Tick(void)
 	}
 
 }
+
