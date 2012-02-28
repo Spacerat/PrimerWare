@@ -4,7 +4,7 @@
 * Description        :  Generates random numbers.
 *
 *******************************************************************************/
-#define PHI 0x9e3779b9
+#define PHI 0x9e3779b9 //(Joe: lol.)
 
 static int Q[32], c = 65535;
  
