@@ -4,6 +4,8 @@ http://en.wikipedia.org/w/index.php?title=Circular_buffer&oldid=474915405
 
 #include "cbuffer.h"
 
+
+
 void cbInit(CircularBuffer *cb, int size) {
 	cb->size  = size + 1; /* include empty elem */
 	cb->start = 0;
@@ -37,3 +39,30 @@ void cbRead(CircularBuffer *cb, buff_t *elem) {
 	*elem = cb->elems[cb->start];
 	cb->start = (cb->start + 1) % cb->size;
 }
+
+
+#ifdef TEST_CBUFF
+
+#include <stdio.h>
+
+int main( void ) {
+	CircularBuffer buff;
+	cbInit(&buff, 10);
+	cbWrite(&buff, 3);
+	cbWrite(&buff, 23);
+	cbWrite(&buff, 43);	
+	buff_t dat;
+	cbRead(&buff, &dat);
+	printf("%d\n", dat);
+
+	cbRead(&buff, &dat);
+	printf("%d\n", dat);
+
+	cbRead(&buff, &dat);
+	printf("%d\n", dat);
+
+	printf("%d\n", cbIsEmpty(&buff));
+	return 0;
+}
+
+#endif

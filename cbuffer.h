@@ -5,11 +5,20 @@ http://en.wikipedia.org/w/index.php?title=Circular_buffer&oldid=474915405
 #ifndef CIRCLE_BUFFER_LIB_H_GUARD
 #define CIRCLE_BUFFER_LIB_H_GUARD
 
+//#define TEST_CBUFF
+
+#ifdef TEST_CBUFF
+
+#include <malloc.h>
+typedef unsigned char buff_t;
+
+#else
+
 #include "circle_api.h"
 #include <malloc.h>
-
-/* Opaque buffer element type.  This would be defined by the application. */
 typedef u8 buff_t;
+
+#endif
 
 /* Circular buffer object */
 typedef struct {
