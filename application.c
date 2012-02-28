@@ -271,6 +271,7 @@ enum MENU_code Application_Handler(void)
 				GAMEDRAW_stageSuccess();
 			else
 				GAMEDRAW_stageFail();
+			screenDrawn = TRUE;
 		}
 		
 		//Master waits a few moments until starting a new game.
@@ -287,6 +288,7 @@ enum MENU_code Application_Handler(void)
 					screen = display_RoundFinish;
 				else
 					screen = display_StageStart;
+				screenDrawn = FALSE;
 			}
 		}
 	} else if (screen == display_RoundFinish) {
