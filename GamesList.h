@@ -9,9 +9,10 @@
 #include "GameHandler.h"
 #include "minigames/TestGames.h"
 #include "minigames/BalloonInflate.h"
+#include "minigames/TiltMove.h"
 
 
-gameRunFunction minigamesSinglePlayer[] = { BalloonInflate_run };
+gameRunFunction minigamesSinglePlayer[] = { TiltMove_run };
 gameRunFunction minigamesCoOp[] = { BalloonInflate_run };
 gameRunFunction minigamesVs[] = { BalloonInflate_run };
 
