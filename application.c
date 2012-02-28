@@ -65,11 +65,16 @@ enum MENU_code Application_Ini(void) {
     }
 
 static gameRunFunction minigameArray[ROUNDLENGTH]; // Holds current minigames
-
-void startMinigames(gameRunFunction* theMinigames) {
-	int i = 0;
+static u8 numMinigames;
+/* 
+This function just fills the global minigameArray with the contents of the supplied
+array of game functions, and sets numMinigames to the num argument.
+*/
+void startMinigames(gameRunFunction* theMinigames, const u8 num) {
+	u8 i = 0;
+	numMinigames = num;
 	for (i = 0; i < ROUNDLENGTH; i++)
-		minigameArray[i] = theMinigames[rand_cmwc() % ROUNDLENGTH];
+		minigameArray[i] = theMinigames[i % num];
 }
 
 #define PACKETDATA_REQUESTGAME_COOP "coop"
@@ -103,6 +108,8 @@ enum MENU_code Application_Handler(void)
 
 	static int currentMinigame = 0; // Index in the array of the current 
 									// pointer.
+	static int gamesPlayed = 0;
+	
 	static int score = 0; // Current total score.
 	static int lives = 3; // Number of lives remaining.
 	static int amServer = 0; // Am I the server (multiplayer only of course)?
@@ -123,8 +130,8 @@ enum MENU_code Application_Handler(void)
 		if (NET_GetFlags() & NETTICK_FLAG_RX) {
 			u8 type;
 			u8 buffer[PACKET_MAX_SIZE];
-			NET_GetPacketData(&type, buffer);
-			switch (type) {
+			NET_GetPacketData(buffer);
+			switch (NET_GetPacketType()) {
 				case PACKET_requestGame:
 					//Other player has requested a game.
 					//Send the data back as an ACK
@@ -146,11 +153,11 @@ enum MENU_code Application_Handler(void)
 					}
 					
 					if (strcmp(buffer, PACKETDATA_REQUESTGAME_COOP) == 0) {
-						startMinigames(minigamesCoOp);
+						startMinigames(minigamesCoOp, NUMCOOPGAMES);
 						gamedata.mode = Game_CoOp;
 					}
 					else if (strcmp(buffer, PACKETDATA_REQUESTGAME_VERSUS) == 0) {
-						startMinigames(minigamesVs);
+						startMinigames(minigamesVsm, NUMVSGAMES);
 						gamedata.mode = Game_Vs;
 					}
 					break;
@@ -179,14 +186,17 @@ enum MENU_code Application_Handler(void)
 			
 			if (menuCode == MenuCode_SinglePlayer) {
 				//Jump straight in if single player is selected
-				startMinigames(minigamesSinglePlayer);
+				startMinigames(minigamesSinglePlayer, NUMSINGLEGAMES);
 				gamedata.mode = Game_SinglePlayer;
+				gamedata.isHost = TRUE;
 				screen = display_StageStart;
+			
 			}
 			else if (menuCode == MenuCode_TwoPlayerCoOp) {
 				//If multiplayer, send a request and wait for an ACK
 				Transmit_RequestGame(TRUE);
 				gameRequested = TRUE;
+
 			}
 			else {
 				Transmit_RequestGame(FALSE);
@@ -218,11 +228,29 @@ enum MENU_code Application_Handler(void)
 		TODO:: IF WE ARE THE SLAVE, INTERCEPT "YOU WIN/LOSE!" PACKETS HERE
 		       IF WE ARE THE MASTER, SEND THEM BASED ON THE GAME STATUS
 		*/
-		minigameArray[currentMinigame](&gamedata);
+		
+		if (gamedata.code = gameStatus_InProgress) {
+			minigameArray[currentMinigame](&gamedata);
+		}
+	
+		// Slave checks for "You win/lose!" packets and overrides the 
+		// game's reported status
+		if (gamedata.isHost == FALSE && NET_GetFlags() & NETTICK_FLAG_RX) {
+			u8 type = NET_GetPacketType();
+			u8 data[PACKET_MAX_SIZE];
+			switch (type) {
+					gamedata.code = gameStatus_Success;
+					break;
+				case PACKET_gameFail:
+					gamedata.code = gameStatus_Fail;
+					break;
+		}
+	
+		
 			
 		// If the game has finished...
 		if (gamedata.code != gameStatus_InProgress) {
-			currentMinigame++;
+			currentMinigame = rand_cmwc() % numMinigames;
 			
 			if (gamedata.code == gameStatus_Success) {
 				score += gamedata.score;
@@ -232,46 +260,40 @@ enum MENU_code Application_Handler(void)
 				screen = display_StageFail;
 			}
 			
-			// Reset gamedata for next game.
 			gamedata.code = gameStatus_InProgress;
 			gamedata.score = 0;
 		}
-	} else if (screen == display_StageSuccess) {
-		if (!TIMER_isEnabled(0)) {
-			TIMER_initTimer(0, stageScreenTimerValue);
-			GAMEDRAW_stageSuccess();
+	} else if (screen == display_StageSuccess || screen == display_StageFail) {
+		static bool screenDrawn = FALSE;
+		if (!screenDrawn) {
+			if (screen == display_StageSuccess)
+				GAMEDRAW_stageSuccess();
+			else
+				GAMEDRAW_stageFail();
 		}
 		
-		if (TIMER_checkTimer(0)) {
-			TIMER_disableTimer(0);
-			
-			// Check if we need to end the round.
-			if (lives == 0 || currentMinigame == ROUNDLENGTH)
-				screen = display_RoundFinish;
-			else
-				screen = display_StageStart;
-		}
-	} else if (screen == display_StageFail) {
-		if (!TIMER_isEnabled(0)) {
-			TIMER_initTimer(0, stageScreenTimerValue);
-			GAMEDRAW_stageFail();
-		}
-		
-		if (TIMER_checkTimer(0)) {
-			TIMER_disableTimer(0);
-			
-			// Check if we need to end the round.
-			if (lives == 0 || currentMinigame == ROUNDLENGTH)
-				screen = display_RoundFinish;
-			else
-				screen = display_StageStart;
+		//Master waits a few moments until starting a new game.
+		//Slave waits for the master to tell it which game to play.
+		if (gamedata.isHost) {
+			if(!TIMER_isEnabled(0)) {
+				TIMER_initTimer(0, stageScreenTimerValue);
+			}
+			if (TIMER_checkTimer(0)) {
+				TIMER_disableTimer(0);
+				
+				// Check if we need to end the round.
+				if (lives == 0 || currentMinigame == ROUNDLENGTH)
+					screen = display_RoundFinish;
+				else
+					screen = display_StageStart;
+			}
 		}
 	} else if (screen == display_RoundFinish) {
-		static bool screenDrawn = 0;
+		static bool screenDrawn = FALSE;
 		
 		if (!screenDrawn) {
 			GAMEDRAW_roundFinished(score, lives);
-			screenDrawn = 1;
+			screenDrawn = TRUE;
 		}
 		
 		if (TOUCH_clickEvent().type == TouchType_Depressed) {
@@ -282,8 +304,9 @@ enum MENU_code Application_Handler(void)
 			lives = 3;
 			score = 0;
 			currentMinigame = 0;
-			screenDrawn = 0;
+			screenDrawn = FALSE;
 			gameRequested = FALSE;
+			gamesPlayed = 0;
 		}
 	}
 		

@@ -55,7 +55,8 @@ void NET_RCC_Configuration(void);
 u8 NET_Tick(void);
 u8 NET_GetFlags();
 int NET_TransmitPacket(struct Packet * packet);
-u8 NET_GetPacketData(u8 * type, u8 * buffer);
+u8 NET_GetPacketData(u8 * buffer);
+u8 NET_GetPacketType( void );
 int NET_TransmitStringPacket(u8 type, char * string);
 
 #endif

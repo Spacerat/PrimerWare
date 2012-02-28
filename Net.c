@@ -227,11 +227,17 @@ int NET_TransmitStringPacket(u8 type, char * string)
    Set the "type" parameter to the packet ID.
    Return the length of the data.
 */
-u8 NET_GetPacketData(u8 * type, u8 * buffer) {
+u8 NET_GetPacketData(u8 * buffer) {
 	*type = lastpacket_type;
 	strcpy(buffer, RXbuffer + 2);
 	return (u8)strlen(buffer + 2);
 }
+
+/* Return just the packet ID of the last packet */
+u8 NET_GetPacketType( void ) {
+	return lastpacket_type;
+}
+
 
 u8 NET_GetFlags() {
 	return net_flags;
@@ -265,7 +271,6 @@ u8 NET_Tick(void)
 		SendData((u8)data);
 		net_flags |= NETTICK_FLAG_TX;
 	}
-
 
 	//Recieve data
 	if (GetFlagStatus(FLAG_RXNE) == SET) {
