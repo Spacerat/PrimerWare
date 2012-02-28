@@ -7,8 +7,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 
-
-
 #include "stm32f10x.h"
 #include "Application.h"
 #include "MenuHandler.h"
