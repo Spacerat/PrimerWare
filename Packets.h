@@ -3,12 +3,13 @@ enum PacketTypes {
 	/* --- Menu packets --- */
 	PACKET_requestGame,
 	PACKET_ACKGame,
-	
+	PACKET_NextGame,
 
 	/* --- Game packets --- */
 	PACKET_gameData,
 	PACKET_gameWon,
-	PACKET_gameFail
+	PACKET_gameFail,
+	PACKET_roundFinish
 	
 };
 

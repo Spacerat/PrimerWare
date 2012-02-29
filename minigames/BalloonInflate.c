@@ -28,7 +28,12 @@ void BalloonInflate_end(void);
 
 void BalloonInflate_run(struct GameData * data) {
 	if (!BalloonInflate_initialised) BalloonInflate_init(data);
-	
+		
+	//Check if the game is no longer supposed to be running, and run de-initialisation code if that's the case.
+	if (!(data->code) == gameStatus_InProgress) {
+		BalloonInflate_end();
+		return;
+	}
 	// Check if we've displayed the instructions for long enough.	
 	if (!TIMER_checkTimer(BALLOONINFLATE_TIMER_INSTRUCTIONS))
 		return;

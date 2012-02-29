@@ -20,7 +20,7 @@ struct GameData {
 	enum GameModeCode mode; // i.e. sp, coop, versus
 	enum GameStatusCode code;
 	bool isHost;
-	int score;
+	u16 score;
 };
 
 typedef void (*gameRunFunction)(struct GameData * data);

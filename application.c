@@ -60,6 +60,7 @@ enum MENU_code Application_Ini(void) {
 	NET_RCC_Configuration();
 
 	UTIL_SetPll(SPEED_VERY_HIGH);
+	NET_enableTransmission( TRUE );
     return MENU_CONTINUE_COMMAND;
     }
 
@@ -105,11 +106,11 @@ enum MENU_code Application_Handler(void)
 									 // (e.g. are we multiplayer?)
 	
 
-	static int currentMinigame = 0; // Index in the array of the current 
+	static u8 currentMinigame = 0; // Index in the array of the current 
 									// pointer.
 	static int gamesPlayed = 0;
 	
-	static int score = 0; // Current total score.
+	static u16 score = 0; // Current total score.
 	static int lives = 3; // Number of lives remaining.
 	static int amServer = 0; // Am I the server (multiplayer only of course)?
 	const unsigned int stageScreenTimerValue = 200; // Timer value for stage
@@ -124,7 +125,7 @@ enum MENU_code Application_Handler(void)
 	
 	if (screen == display_Menu) {
 		enum MenuCode menuCode = MENUHANDLER_run(); // Handle menu and get code.
-	
+		 
 		//Recieve data - check if someone wants to start a game with us.
 		if (NET_GetFlags() & NETTICK_FLAG_RX) {
 			u8 type;
@@ -144,11 +145,11 @@ enum MENU_code Application_Handler(void)
 					}
 
 					else {
-						//Slave sent master an ACK, master should begin in roughly 8 ticks...
+						//Slave sent master an ACK, master should begin in roughly 48 ticks...
 						//And also complete the handshake.
 						gamedata.isHost = TRUE;
 						NET_TransmitStringPacket(PACKET_ACKGame, buffer);
-						TIMER_initTimer(0, 8);
+						TIMER_initTimer(0, 48);
 					}
 					
 					if (strcmp(buffer, PACKETDATA_REQUESTGAME_COOP) == 0) {
@@ -213,7 +214,7 @@ enum MENU_code Application_Handler(void)
 	} else if (screen == display_StageStart) {
 		if (!TIMER_isEnabled(0)) {
 			TIMER_initTimer(0, stageScreenTimerValue);
-			GAMEDRAW_stageN(currentMinigame + 1);
+			GAMEDRAW_stageN(gamesPlayed + 1);
 		}
 		
 		if (TIMER_checkTimer(0)) {
@@ -226,42 +227,61 @@ enum MENU_code Application_Handler(void)
 		// Run the current game and get its status.
 	
 		/*
-		TODO:: IF WE ARE THE SLAVE, INTERCEPT "YOU WIN/LOSE!" PACKETS HERE
+		TODO:: 
 		       IF WE ARE THE MASTER, SEND THEM BASED ON THE GAME STATUS
 		*/
 		
 		if (gamedata.code == gameStatus_InProgress) {
-			minigameArray[currentMinigame](&gamedata);
+			minigameArray[currentMinigame](&gamedata);	
 		}
+		//Slave is not allowed to decide whether it has won.
+		if (gamedata.isHost == FALSE) gamedata.code = gameStatus_InProgress;
 	
 		// Slave checks for "You win/lose!" packets and overrides the 
-		// game's reported status
+		// game's reported status. Also receives increments score
 		if (gamedata.isHost == FALSE && NET_GetFlags() & NETTICK_FLAG_RX) {
 			u8 type = NET_GetPacketType();
-			u8 data[PACKET_MAX_SIZE];
+			u8 buff[PACKET_MAX_SIZE];
+		
 			switch (type) {
-					gamedata.code = gameStatus_Success;
-					break;
+				case PACKET_gameWon:
 				case PACKET_gameFail:
-					gamedata.code = gameStatus_Fail;
+					NET_GetPacketData(buff);
+					score += (u16 * )buff[0];
+					gamedata.code = (type == PACKET_gameFail ? gameStatus_Fail : gameStatus_Success);
+					/*Run the game code again with the changed state.
+					The game is responsible for checking that it is no longer supposed
+					to be running, and so calling any teardown code. */
+					minigameArray[currentMinigame](&gamedata);	
 					break;
 			}
 		}
-			
+	
+		
+
 		// If the game has finished...
 		if (gamedata.code != gameStatus_InProgress) {
-			currentMinigame = rand_cmwc() % numMinigames;
+			
 			
 			if (gamedata.code == gameStatus_Success) {
-				score += gamedata.score;
+				if (gamedata.isHost) score += gamedata.score;
 				screen = display_StageSuccess;
 			} else {
 				lives--;
 				screen = display_StageFail;
 			}
+			// If we are the host (or SP), pick a new minigame and alert the client;
+			if (gamedata.isHost) {
+				currentMinigame = rand_cmwc() % numMinigames;
+				u8 buff[3];
+				((u16 * )buff)[0] = gamedata.score;
+				buff[2] = '\0';
+				NET_TransmitStringPacket(gamedata.code == gameStatus_Success ? PACKET_gameWon : PACKET_gameFail, buff);
+			}
 			gamesPlayed ++;
 			gamedata.code = gameStatus_InProgress;
 			gamedata.score = 0;
+		
 		}
 	} else if (screen == display_StageSuccess || screen == display_StageFail) {
 		static bool screenDrawn = FALSE;
@@ -283,11 +303,41 @@ enum MENU_code Application_Handler(void)
 				TIMER_disableTimer(0);
 				
 				// Check if we need to end the round.
-				if (lives == 0 || gamesPlayed == ROUNDLENGTH)
+				if (lives == 0 || gamesPlayed == ROUNDLENGTH) {
 					screen = display_RoundFinish;
-				else
+					u16 buff[2];
+					buff[0] = score;
+					buff[1] = '\0';
+					NET_TransmitStringPacket(PACKET_roundFinish, (u8 * )buff);
+				}
+				else {
 					screen = display_StageStart;
+					u8 buff[2];
+					buff[0] = currentMinigame;
+					buff[1] = '\0';
+					NET_TransmitStringPacket(PACKET_NextGame, buff);
+				}
 				screenDrawn = FALSE;
+			}
+		
+		}
+		else {
+			if (NET_GetFlags() & NETTICK_FLAG_RX) {
+				u8 type = NET_GetPacketType();
+				u8 buff[PACKET_MAX_SIZE];
+				switch (type) {
+					case PACKET_NextGame:
+						NET_GetPacketData(buff);
+						screen = display_StageStart;
+						currentMinigame = buff[0];
+						screenDrawn = FALSE;
+						break;
+					case PACKET_roundFinish:
+						NET_GetPacketData(buff);
+						screen = display_RoundFinish;
+						score = ((u16 *) buff)[0];
+						break;
+				}
 			}
 		}
 	} else if (screen == display_RoundFinish) {
@@ -309,6 +359,7 @@ enum MENU_code Application_Handler(void)
 			screenDrawn = FALSE;
 			gameRequested = FALSE;
 			gamesPlayed = 0;
+			NET_enableTransmission( TRUE );
 		}
 	}
 		
