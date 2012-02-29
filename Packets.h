@@ -6,11 +6,10 @@ enum PacketTypes {
 	PACKET_NextGame,
 
 	/* --- Game packets --- */
-	PACKET_gameData,
 	PACKET_gameWon,
 	PACKET_gameFail,
-	PACKET_roundFinish
-	
+	PACKET_roundFinish,
+	PACKET_gameData
 };
 
 
