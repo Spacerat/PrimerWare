@@ -58,5 +58,7 @@ int NET_TransmitPacket(struct Packet * packet);
 u8 NET_GetPacketData(u8 * buffer);
 u8 NET_GetPacketType( void );
 int NET_TransmitStringPacket(u8 type, char * string);
+void NET_enableTransmission( bool Enabled );
+
 
 #endif

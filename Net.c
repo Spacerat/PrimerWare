@@ -17,6 +17,7 @@ void assert_failed(u8* file, u32 line) {}  // Required by libraries.
 tHandler OldHandler; // I have no idea what this is for
 
 CircularBuffer TXbuffer;           //Stores all data to be transmitted
+bool TX_enable;
 
 u8 RXbuffer[PACKET_TOTAL_SIZE];  //Stores all received packet data
 u8 RXbufferIndex = 0;              //Counts data in the RX buffer
@@ -215,9 +216,11 @@ Creates a packet from the given data and data length, then adds this to the
 transmission queue.
 
 Returns 1 if there is no null character in the packet data (overflow).
+Returns -1 if tx_enable is false.
 */
 int NET_TransmitPacket(struct Packet * packet)
 {
+	if (TX_enable == FALSE) return -1;
 	cbWrite(&TXbuffer, PACKET_BEGIN);
 	cbWrite(&TXbuffer, packet->type);
 
@@ -238,9 +241,11 @@ Creates a packet from the given data and data length, then adds this to the
 transmission queue.
 
 Returns 1 if there is no null character in the packet data (overflow).
+Returns -1 if tx_enable is false.
 */
 int NET_TransmitStringPacket(u8 type, char * string)
 {
+	if (TX_enable == FALSE) return -1;
 	cbWrite(&TXbuffer, PACKET_BEGIN);
 	cbWrite(&TXbuffer, type);
 
@@ -272,6 +277,14 @@ u8 NET_GetPacketType( void ) {
 
 u8 NET_GetFlags() {
 	return net_flags;
+}
+
+/* Call to enable/disable the transmit functions. The transmit functions
+do nothing when Enabled is false - this lets you call them in single player
+mode without caring.
+*/
+void NET_enableTransmission( bool Enabled) {
+	TX_enable = Enabled;
 }
 
 //Send/Recieve IR packets.
