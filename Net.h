@@ -1,21 +1,25 @@
 #ifndef NET_H_GUARD
 #define NET_H_GUARD
 
-//#def USE_SPI //Uncomment to use SPI instead of IR
-#define USE_IR
+//#define USE_SPI //Uncomment to use SPI
+//#define USE_SERIAL //Uncomment to use USART serial
+//#define USE_IR //Uncomment to use IR comms
 
+#if defined(USE_SERIAL) || defined(USE_IR)
+	#define USE_USART
+#endif
 
 #include "misc.h"
 #include "stm32f10x_conf.h"
 #include "stm32f10x_gpio.h"
 #include "Packets.h"
 
-#ifdef USE_SPI
+#if defined(USE_SPI)
 	#include "stm32f10x_spi.h"
-#endif
-#ifdef USE_IR
+#elif defined(USE_IR) || defined(USE_SERIAL)
 	#include "stm32f10x_usart.h"
 #endif
+
 #include "stm32f10x_rcc.h"
 #include "circle_api.h"
 
@@ -34,10 +38,32 @@
 #define NETTICK_FLAG_TX 8
 
 //Hardware settings
-#define SPIx SPI1
-#define USARTx USART1
-
-
+#if defined(USE_SPI)
+	#define SPIx SPI1
+	#define GPIOx GPIOA
+#elif defined(USE_IR)
+	#define USARTx USART1
+	#define GPIOx GPIOA
+	#define USARTx_CLK RCC_APB2Periph_USART1
+	#define GPIO_LEDS GPIOD
+	#define GPIO_LEDS_RCC RCC_APBPeriph_GPIOD
+	#define NET_TxPin GPIO_Pin_9
+	#define NET_RxPin GPIO_Pin_10
+	#define NET_PPPin GPIO_Pin_8
+	#define NET_BAUD_RATE 115200
+	
+#elif defined(USE_SERIAL)
+	#define USARTx USART2
+	#define USARTx_CLK RCC_APB2Periph_USART2
+	#define GPIOx GPIOA
+	#define GPIO_LEDS GPIOE
+	#define GPIO_LEDS_RCC RCC_APBPeriph_GPIOE
+	#define NET_TxPin GPIO_Pin_2
+	#define NET_RxPin GPIO_Pin_3
+	#define NET_PPPin GPIO_Pin_LED0 | GPIO_Pin_LED1
+	#define NET_BAUD_RATE 6400
+	
+#endif
 
 #define TICK_PACKET_RX 1
 #define TICK_DATA_TX 2

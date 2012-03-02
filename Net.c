@@ -37,9 +37,8 @@ static bool clear_RX_buffer_at_next_tick = TRUE;
 #define FLAG_TXE SPI_I2S_FLAG_TXE
 #define FLAG_RXNE SPI_I2S_FLAG_RXNE
 
-#endif
-#ifdef USE_IR
-#warning IR enabled
+#elif defined(USE_USART)
+
 #define GetFlagStatus(flag) USART_GetFlagStatus(USARTx, flag)
 #define SendData(data) USART_SendData(USARTx, data)
 #define ReceiveData() USART_ReceiveData(USARTx)
@@ -56,34 +55,33 @@ void GPIO_Configuration(void)
 {
 
 	GPIO_InitTypeDef GPIO_InitStructure;
-#ifdef USE_SPI
+#if defined(USE_SPI)
 	/* Configure SPI1 pins: SCK, MISO and MOSI ---------------------------------*/
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_Init(GPIOx, &GPIO_InitStructure);
 	
 	/* Configure SPI2 pins: SCK, MISO and MOSI ---------------------------------*/
 	//GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
 	//GPIO_Init(GPIOB, &GPIO_InitStructure);
-#endif
-#ifdef USE_IR
-    /* Configure USART1 Tx (PA.9)as alternate function push-pull */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+#elif defined(USE_USART)
+    /* Configure USART1 Tx pin as alternate function push-pull */
+    GPIO_InitStructure.GPIO_Pin = NET_TxPin;//GPIO_Pin_9;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_Init(GPIOx, &GPIO_InitStructure);
 
     /* Configure USART1 Rx PA.10 as input floating */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+    GPIO_InitStructure.GPIO_Pin = NET_RxPin;//GPIO_Pin_10;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    GPIO_Init(GPIOx, &GPIO_InitStructure);
 
     /* Configure GPIO_D Pin 8 = CS Irda */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+    GPIO_InitStructure.GPIO_Pin = NET_PPPin;//GPIO_Pin_8;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_Init(GPIOD, &GPIO_InitStructure);
+    GPIO_Init(GPIO_LEDS, &GPIO_InitStructure);
 #endif
 }
 
@@ -120,20 +118,19 @@ void Net_Configuration(void)
 	SPI_Cmd(SPIx, ENABLE);
 	/* Enable SPI2 */
 	//SPI_Cmd(SPI2, ENABLE);
-#endif
-#ifdef USE_IR
+#elif defined(USE_USART)
 	USART_InitTypeDef USART_InitStructure;
 
-	/* USART3 configuration ------------------------------------------------------*/
-	/* USART3 configured as follow:
-		- BaudRate = 115200 baud  
+	/* USART configuration ------------------------------------------------------*/
+	/* USART configured as follow:
+		- BaudRate = 115200 or 6400 baud  
 		- Word Length = 8 Bits
 		- One Stop Bit
 		- No parity
 		- Hardware flow control disabled (RTS and CTS signals)
 		- Receive and transmit enabled
 	*/
-	USART_InitStructure.USART_BaudRate = 115200;
+	USART_InitStructure.USART_BaudRate = NET_BAUD_RATE;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No ;
@@ -141,27 +138,23 @@ void Net_Configuration(void)
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
 
-	////* Configure the USART3 */
-	/* Configure the USART1 */
-	USART_Init(USART1, &USART_InitStructure);
-	////* Enable the USART3 */
-	/* Enable the USART1 */
-	USART_Cmd(USART1, ENABLE);
+	/* Configure the USARTx */
+	USART_Init(USARTx, &USART_InitStructure);
+	/* Enable the USARTx */
+	USART_Cmd(USARTx, ENABLE);
 
-	////* Set the USART3 prescaler */
-	/* Set the USART1 prescaler */
-	USART_SetPrescaler(USART1, 0x1);
-	////* Configure the USART3 IrDA mode */
-	/* Configure the USART1 IrDA mode */
-	USART_IrDAConfig(USART1, USART_IrDAMode_Normal);
+	#if defined(USE_IR)
+		/* Set the USARTx prescaler */
+		USART_SetPrescaler(USARTx, 0x1);
+		/* Configure the USARTx IrDA mode */
+		USART_IrDAConfig(USARTx, USART_IrDAMode_Normal);
 
-	////* Enable the USART3 IrDA mode */
-	/* Enable the USART1 IrDA mode */
-	USART_IrDACmd(USART1, ENABLE);
+		/* Enable the USARTx IrDA mode */
+		USART_IrDACmd(USARTx, ENABLE);
 
-	// CS Irda  = 1
-	GPIO_ResetBits(GPIOD, GPIO_Pin_8);
-
+		// CS Irda  = 1
+		GPIO_ResetBits(GPIO_LEDS, NET_PPPin);
+	#endif
 #endif
 }
 
@@ -177,14 +170,13 @@ void NET_RCC_Configuration(void)
 	/* GPIOA, GPIOB and SPI1 clock enable */
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |
 	RCC_APB2Periph_SPI1, ENABLE);
-#endif
-#ifdef USE_IR
+#elif defined(USE_USART)
 
-    //Enable clock
+    //Enable peripheral clocks
     RCC_APB2PeriphClockCmd(
-        RCC_APB2Periph_GPIOD | 
+        GPIO_LEDS_RCC | 
         RCC_APB2Periph_AFIO | 
-        RCC_APB2Periph_USART1, ENABLE);
+        USARTx_CLK, ENABLE);
 
 #endif
 	/* SPI2 Periph clock enable */
