@@ -38,7 +38,7 @@ static bool clear_RX_buffer_at_next_tick = TRUE;
 #define FLAG_RXNE SPI_I2S_FLAG_RXNE
 
 #elif defined(USE_USART)
-
+#warning USART!
 #define GetFlagStatus(flag) USART_GetFlagStatus(USARTx, flag)
 #define SendData(data) USART_SendData(USARTx, data)
 #define ReceiveData() USART_ReceiveData(USARTx)
