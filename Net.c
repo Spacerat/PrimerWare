@@ -52,7 +52,7 @@ static bool clear_RX_buffer_at_next_tick = TRUE;
 
 /* Configure GPIO
 Taken from SPI CRC Example */
-void GPIO_Configuration(void)
+__attribute__((section(".rodata"))) void GPIO_Configuration(void)
 {
 
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -90,7 +90,7 @@ void GPIO_Configuration(void)
 
 /* Configure SPI or IrDA interface.
 Taken from SPI CRC and IrDA examples. */
-void Net_Configuration(void)
+__attribute__((section(".rodata"))) void Net_Configuration(void)
 {
 #ifdef USE_SPI
 	SPI_InitTypeDef  SPI_InitStructure;
@@ -168,7 +168,7 @@ void Net_Configuration(void)
 
 /* Configure Clock
 Taken from SPI CRC Example */
-void NET_RCC_Configuration(void)
+__attribute__((section(".rodata"))) void NET_RCC_Configuration(void)
 {
 	/* PCLK2 = HCLK/2 */
 	//RCC_PCLK2Config(RCC_HCLK_Div2);
@@ -193,7 +193,7 @@ void NET_RCC_Configuration(void)
 
 /* Call this once to set up the networking code.
 Call it twice to do absolutely nothing extra */
-void NET_Setup(void)
+__attribute__((section(".rodata"))) void NET_Setup(void)
 {
 	static bool issetup = FALSE;
 	if (issetup == FALSE)
@@ -218,7 +218,7 @@ transmission queue.
 Returns 1 if there is no null character in the packet data (overflow).
 Returns -1 if tx_enable is false.
 */
-int NET_TransmitPacket(struct Packet * packet)
+__attribute__((section(".rodata"))) int NET_TransmitPacket(struct Packet * packet)
 {
 	if (TX_enable == FALSE) return -1;
 	cbWrite(&TXbuffer, PACKET_BEGIN);
@@ -243,7 +243,7 @@ transmission queue.
 Returns 1 if there is no null character in the packet data (overflow).
 Returns -1 if tx_enable is false.
 */
-int NET_TransmitStringPacket(u8 type, char * string)
+__attribute__((section(".rodata"))) int NET_TransmitStringPacket(u8 type, char * string)
 {
 	if (TX_enable == FALSE) return -1;
 	cbWrite(&TXbuffer, PACKET_BEGIN);
@@ -264,18 +264,18 @@ int NET_TransmitStringPacket(u8 type, char * string)
    Set the "type" parameter to the packet ID.
    Return the length of the data.
 */
-u8 NET_GetPacketData(u8 * buffer) {
+__attribute__((section(".rodata"))) u8 NET_GetPacketData(u8 * buffer) {
 	strcpy(buffer, RXbuffer + 2);
 	return (u8)strlen(buffer + 2);
 }
 
 /* Return just the packet ID of the last packet */
-u8 NET_GetPacketType( void ) {
+__attribute__((section(".rodata"))) u8 NET_GetPacketType( void ) {
 	return lastpacket_type;
 }
 
 
-u8 NET_GetFlags() {
+__attribute__((section(".rodata"))) u8 NET_GetFlags() {
 	return net_flags;
 }
 
@@ -283,7 +283,7 @@ u8 NET_GetFlags() {
 do nothing when Enabled is false - this lets you call them in single player
 mode without caring.
 */
-void NET_enableTransmission( bool Enabled) {
+__attribute__((section(".rodata"))) void NET_enableTransmission( bool Enabled) {
 	TX_enable = Enabled;
 }
 
@@ -293,7 +293,7 @@ Return value may include a number of flags:
 - IR_PACKET_RX: A packet has been received
 - IR_TX_EMPTY: There is no more data to send
 */
-u8 NET_Tick(void)
+__attribute__((section(".rodata"))) u8 NET_Tick(void)
 {
 
 	//If a packet was received last tick, it should have been dealt with by now.

@@ -45,7 +45,14 @@ enum MENU_code Application_Ini(void) {
         return MsgVersion();
     }
     
-    // This application manages all the screen. 
+    // Set speed.
+	UTIL_SetPll(SPEED_VERY_HIGH);
+    MENU_SetAppliDivider(10);
+
+	NET_RCC_Configuration();
+	NET_enableTransmission( TRUE );
+	
+	// This application manages all the screen. 
     // If you don't reset the offset on EvoPrimer, the screen will be reduced
     // to 128x128 pixels for Primer2 compatibility
     //LCD_SetOffset(OFFSET_OFF);
@@ -53,16 +60,8 @@ enum MENU_code Application_Ini(void) {
 	// Disable screen rotation.
 	LCD_SetRotateScreen(0);
     
-    // Set speed.
-	
-    MENU_SetAppliDivider(10);
-
-	NET_RCC_Configuration();
-
-	UTIL_SetPll(SPEED_VERY_HIGH);
-	NET_enableTransmission( TRUE );
-    return MENU_CONTINUE_COMMAND;
-    }
+	return MENU_CONTINUE_COMMAND;
+}
 
 static gameRunFunction minigameArray[ROUNDLENGTH]; // Holds current minigames
 static u8 numMinigames;
@@ -70,7 +69,7 @@ static u8 numMinigames;
 This function just fills the global minigameArray with the contents of the supplied
 array of game functions, and sets numMinigames to the num argument.
 */
-void startMinigames(gameRunFunction* theMinigames, const u8 num) {
+__attribute__((section(".rodata"))) void startMinigames(gameRunFunction* theMinigames, const u8 num) {
 	u8 i = 0;
 	numMinigames = num;
 	for (i = 0; i < ROUNDLENGTH; i++)
@@ -80,7 +79,7 @@ void startMinigames(gameRunFunction* theMinigames, const u8 num) {
 #define PACKETDATA_REQUESTGAME_COOP "coop"
 #define PACKETDATA_REQUESTGAME_VERSUS "versus"
 
-void Transmit_RequestGame(bool isCoOp) {
+__attribute__((section(".rodata"))) void Transmit_RequestGame(bool isCoOp) {
 	if (isCoOp == TRUE)
 		NET_TransmitStringPacket(PACKET_requestGame, PACKETDATA_REQUESTGAME_COOP);
 	else
@@ -235,11 +234,11 @@ enum MENU_code Application_Handler(void)
 			minigameArray[currentMinigame](&gamedata);	
 		}
 		//Slave is not allowed to decide whether it has won.
-		if (gamedata.isHost == FALSE) gamedata.code = gameStatus_InProgress;
+		if (gamedata.isHost == FALSE && gamedata.mode != Game_SinglePlayer) gamedata.code = gameStatus_InProgress;
 	
 		// Slave checks for "You win/lose!" packets and overrides the 
 		// game's reported status. Also receives increments score
-		if (gamedata.isHost == FALSE && NET_GetFlags() & NETTICK_FLAG_RX) {
+		if (gamedata.isHost == FALSE && (NET_GetFlags() & NETTICK_FLAG_RX)) {
 			u8 type = NET_GetPacketType();
 			u8 buff[PACKET_MAX_SIZE];
 		
@@ -373,7 +372,7 @@ enum MENU_code Application_Handler(void)
 * Input          : None
 * Return         : MENU_REFRESH
 *******************************************************************************/
-static enum MENU_code MsgVersion(void)
+__attribute__((section(".rodata"))) static enum MENU_code MsgVersion(void)
     {
     u8 hh, mm, ss, ss2;
 
@@ -394,4 +393,4 @@ static enum MENU_code MsgVersion(void)
 
     DRAW_Clear();
     return MENU_REFRESH;
-    }
+}

@@ -13,23 +13,23 @@
 /*
  * Set up drawing stuff.
  */
-void MENUDRAW_setupDrawing(void) {
+__attribute__((section(".rodata"))) void MENUDRAW_setupDrawing(void) {
 	DRAW_SetCharMagniCoeff(1);
 	DRAW_SetTextColor(RGB_BLUE);
 	DRAW_SetBGndColor(RGB_WHITE);
 }
 
-void MENUDRAW_drawMenu(void) {
+__attribute__((section(".rodata"))) void MENUDRAW_drawMenu(void) {
 	MENUDRAW_setupDrawing();
 	DRAW_Clear();
 	MENUDRAW_drawTitle();
 	MENUDRAW_drawPlayersMenu();
 }
 
-void MENUDRAW_drawTitle(void) {
+__attribute__((section(".rodata"))) void MENUDRAW_drawTitle(void) {
 	DRAW_DisplayStringWithMode(0, 100, "PrimerWare!", ALL_SCREEN, 1, 1);
 }
-void MENUDRAW_drawPlayersMenu(void) {
+__attribute__((section(".rodata"))) void MENUDRAW_drawPlayersMenu(void) {
 	// Screen /space/ is 127x128(?)
 
 	MENUDRAW_clearButtonAreas();
@@ -56,7 +56,7 @@ void MENUDRAW_drawPlayersMenu(void) {
 /*
  * Clears the button areas by filling with white.
  */
-void MENUDRAW_clearButtonAreas(void) {
+__attribute__((section(".rodata"))) void MENUDRAW_clearButtonAreas(void) {
 	LCD_FillRect(MENUDRAW_BOXES_XCOORD,
 				 MENUDRAW_TOPBOX_YCOORD,
 				 MENUDRAW_BOXES_WIDTH,
@@ -69,7 +69,7 @@ void MENUDRAW_clearButtonAreas(void) {
 				 RGB_WHITE);	
 }
 
-void MENUDRAW_drawTwoPlayerGameTypeMenu(void) {
+__attribute__((section(".rodata"))) void MENUDRAW_drawTwoPlayerGameTypeMenu(void) {
 	MENUDRAW_clearButtonAreas();
 	
 	// Draw box for "Co-op".

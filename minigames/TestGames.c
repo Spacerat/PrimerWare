@@ -10,7 +10,7 @@
 #include "../GameHandler.h"
 #include "../Touchscreen.h"
 
-void testRun1(struct GameData * data) {
+__attribute__((section(".rodata"))) void testRun1(struct GameData * data) {
 	data->code = gameStatus_InProgress;
 	data->score = 0;
 	
@@ -38,7 +38,7 @@ void testRun1(struct GameData * data) {
 
 }
 
-void testRun2(struct GameData * data) {
+__attribute__((section(".rodata"))) void testRun2(struct GameData * data) {
 	data->code = gameStatus_InProgress;
 	data->score = 0;
 	
@@ -65,7 +65,7 @@ void testRun2(struct GameData * data) {
 		data->code = gameStatus_Success;
 }
 
-void testRun3(struct GameData * data) {
+__attribute__((section(".rodata"))) void testRun3(struct GameData * data) {
 	data->code = gameStatus_InProgress;
 	data->score = 0;
 	
