@@ -6,11 +6,10 @@
 #include <string.h>
 
 
-#define BAUD_RATE 115200
 
 #define PACKET_BEGIN 0xFF
 
-#define USE_IR//This needs to be declared again in here for some reason.
+//#define USE_IR//This needs to be declared again in here for some reason.
 
 void assert_failed(u8* file, u32 line) {}  // Required by libraries.
 
@@ -28,6 +27,7 @@ static u8 net_flags = 0;
 static u16 send_countdown = send_delay;
 
 static bool clear_RX_buffer_at_next_tick = TRUE;
+
 
 #ifdef USE_SPI //To facilitate switching between communication protocals... Yay macros!
 
@@ -55,17 +55,7 @@ void GPIO_Configuration(void)
 {
 
 	GPIO_InitTypeDef GPIO_InitStructure;
-#if defined(USE_SPI)
-	/* Configure SPI1 pins: SCK, MISO and MOSI ---------------------------------*/
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_Init(GPIOx, &GPIO_InitStructure);
-	
-	/* Configure SPI2 pins: SCK, MISO and MOSI ---------------------------------*/
-	//GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
-	//GPIO_Init(GPIOB, &GPIO_InitStructure);
-#elif defined(USE_USART)
+#if defined(USE_USART)
     /* Configure USART1 Tx pin as alternate function push-pull */
     GPIO_InitStructure.GPIO_Pin = NET_TxPin;//GPIO_Pin_9;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -76,12 +66,13 @@ void GPIO_Configuration(void)
     GPIO_InitStructure.GPIO_Pin = NET_RxPin;//GPIO_Pin_10;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
     GPIO_Init(GPIOx, &GPIO_InitStructure);
-
-    /* Configure GPIO_D Pin 8 = CS Irda */
-    GPIO_InitStructure.GPIO_Pin = NET_PPPin;//GPIO_Pin_8;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_Init(GPIO_LEDS, &GPIO_InitStructure);
+	#ifdef USE_IR
+		/* Configure GPIO_D Pin 8 = CS Irda */
+		GPIO_InitStructure.GPIO_Pin = NET_PPPin;//GPIO_Pin_8;
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+		GPIO_Init(GPIO_LEDS, &GPIO_InitStructure);
+	#endif
 #endif
 }
 
@@ -90,35 +81,7 @@ void GPIO_Configuration(void)
 Taken from SPI CRC and IrDA examples. */
 void Net_Configuration(void)
 {
-#ifdef USE_SPI
-	SPI_InitTypeDef  SPI_InitStructure;
-
-	/* SPI1 configuration ------------------------------------------------------*/
-	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_16b;
-	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
-	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
-	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-	SPI_InitStructure.SPI_CRCPolynomial = 7;
-	SPI_Init(SPI1, &SPI_InitStructure);
-
-	/* SPI2 configuration ------------------------------------------------------*/
-	//SPI_InitStructure.SPI_Mode = SPI_Mode_Slave;
-	//SPI_Init(SPI2, &SPI_InitStructure);
-
-	/* Enable SPI1 CRC calculation */
-	SPI_CalculateCRC(SPIx, ENABLE);
-	/* Enable SPI2 CRC calculation */
-	//SPI_CalculateCRC(SPI2, ENABLE);
-
-	/* Enable SPI1 */
-	SPI_Cmd(SPIx, ENABLE);
-	/* Enable SPI2 */
-	//SPI_Cmd(SPI2, ENABLE);
-#elif defined(USE_USART)
+#if defined(USE_USART)
 	USART_InitTypeDef USART_InitStructure;
 
 	/* USART configuration ------------------------------------------------------*/
@@ -142,10 +105,13 @@ void Net_Configuration(void)
 	USART_Init(USARTx, &USART_InitStructure);
 	/* Enable the USARTx */
 	USART_Cmd(USARTx, ENABLE);
-
+	
+	/* Set the USARTx prescaler */
+	USART_SetPrescaler(USARTx, 0x1);
+	
 	#if defined(USE_IR)
-		/* Set the USARTx prescaler */
-		USART_SetPrescaler(USARTx, 0x1);
+		#warning IR!!!
+		
 		/* Configure the USARTx IrDA mode */
 		USART_IrDAConfig(USARTx, USART_IrDAMode_Normal);
 
@@ -165,18 +131,12 @@ void NET_RCC_Configuration(void)
 {
 	/* PCLK2 = HCLK/2 */
 	//RCC_PCLK2Config(RCC_HCLK_Div2);
-#ifdef USE_SPI
-	/* Enable peripheral clocks --------------------------------------------------*/
-	/* GPIOA, GPIOB and SPI1 clock enable */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |
-	RCC_APB2Periph_SPI1, ENABLE);
-#elif defined(USE_USART)
+#if defined(USE_USART)
 
     //Enable peripheral clocks
-    RCC_APB2PeriphClockCmd(
-        GPIO_LEDS_RCC | 
-        RCC_APB2Periph_AFIO | 
-        USARTx_CLK, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+    RCC_APB2PeriphClockCmd(GPIO_CLK, ENABLE);
+	RCC_APB2PeriphClockCmd(USARTx_CLK, ENABLE);
 
 #endif
 	/* SPI2 Periph clock enable */
@@ -287,7 +247,7 @@ Return value may include a number of flags:
 */
 u8 NET_Tick(void)
 {
-
+	USART_SendData(USART2,(u8)'g');
 	//If a packet was received last tick, it should have been dealt with by now.
 	//discard it from memory
 	if (clear_RX_buffer_at_next_tick == TRUE) {

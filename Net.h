@@ -2,8 +2,8 @@
 #define NET_H_GUARD
 
 //#define USE_SPI //Uncomment to use SPI
-//#define USE_SERIAL //Uncomment to use USART serial
-#define USE_IR //Uncomment to use IR comms
+#define USE_SERIAL //Uncomment to use USART serial
+//#define USE_IR //Uncomment to use IR comms
 
 #if defined(USE_SERIAL) || defined(USE_IR)
 	#define USE_USART
@@ -46,7 +46,7 @@
 	#define GPIOx GPIOA
 	#define USARTx_CLK RCC_APB2Periph_USART1
 	#define GPIO_LEDS GPIOD
-	#define GPIO_LEDS_RCC RCC_APB2Periph_GPIOD 
+	#define GPIO_CLK RCC_APB2Periph_GPIOD 
 	#define NET_TxPin GPIO_Pin_9
 	#define NET_RxPin GPIO_Pin_10
 	#define NET_PPPin GPIO_Pin_8
@@ -56,11 +56,9 @@
 	#define USARTx USART2
 	#define USARTx_CLK RCC_APB1Periph_USART2
 	#define GPIOx GPIOA
-	#define GPIO_LEDS GPIOE
-	#define GPIO_LEDS_RCC RCC_APB2Periph_GPIOA
+	#define GPIO_CLK RCC_APB2Periph_GPIOA
 	#define NET_TxPin GPIO_Pin_2
 	#define NET_RxPin GPIO_Pin_3
-	#define NET_PPPin GPIO_Pin_0 | GPIO_Pin_1
 	#define NET_BAUD_RATE 6400
 	
 #endif
