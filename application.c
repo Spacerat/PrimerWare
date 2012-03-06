@@ -59,6 +59,9 @@ enum MENU_code Application_Ini(void) {
 	
 	// Disable screen rotation.
 	LCD_SetRotateScreen(0);
+	
+	// Initialise the PRNG.
+	init_rand(234);
     
 	return MENU_CONTINUE_COMMAND;
 }

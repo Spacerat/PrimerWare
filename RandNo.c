@@ -31,3 +31,7 @@ __attribute__((section(".rodata"))) unsigned int rand_cmwc(void) {
 	}
 	return (Q[i] = r - x);
 }
+
+__attribute__((section(".rodata"))) bool rand_bool(void) {
+	return rand_cmwc() % 2;
+}

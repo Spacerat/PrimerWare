@@ -161,14 +161,25 @@ __attribute__((section(".rodata"))) void init(struct GameData * data) {
 	}
 	
 	// Set start and finish to random locations.
-	aXCoord = (rand_cmwc() % 100) + 10;
-	aYCoord = (rand_cmwc() % 100) + 10;
-	bXCoord = (rand_cmwc() % 100) + 10;
-	bYCoord = (rand_cmwc() % 100) + 10;
+	aXCoord = (rand_cmwc() % 90) + 10;
+	aYCoord = (rand_cmwc() % 30) + 10;
+	bXCoord = (rand_cmwc() % 90) + 10;
+	bYCoord = (rand_cmwc() % 30) + 10 + 70;
 	
 	// If A and B aren't different enough, re-init next time.
 	if (aXCoord - bXCoord < (radius * 5) || aYCoord - bYCoord < (radius * 5)) {
 		return;
+	}
+	
+	// Maybe flip.
+	if (rand_cmwc() % 2 == 1) {
+		int temp = aXCoord;
+		aXCoord = aYCoord;
+		aYCoord = temp;
+		
+		temp = bXCoord;
+		bXCoord = bYCoord;
+		bYCoord = temp;
 	}
 		
 	initialised = 1;
