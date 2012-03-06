@@ -247,7 +247,7 @@ enum MENU_code Application_Handler(void)
 				case PACKET_gameWon:
 				case PACKET_gameFail:
 					NET_GetPacketData(buff);
-					score += (u16 * )buff[0];
+					score += ((u16 * )buff)[0];
 					gamedata.code = (type == PACKET_gameFail ? gameStatus_Fail : gameStatus_Success);
 					/*Run the game code again with the changed state.
 					The game is responsible for checking that it is no longer supposed
