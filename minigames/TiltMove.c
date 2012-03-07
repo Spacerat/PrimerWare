@@ -34,8 +34,8 @@ static const int radius = 3; // Radius of ball.
 #define radMult 3
 static bool randomInit = 0; // Have we initialised the PRNG?
 
-void init(struct GameData * data);
-void end(struct GameData * data);
+static void init(struct GameData * data);
+static void end(struct GameData * data);
 
 int sign(float x) {
 	if (x > 0) return 1;
@@ -121,22 +121,22 @@ void TiltMove_run(struct GameData * data) {
 	// Are we still within the track?
 	/*
 	 * If we look at the lines going around the track clockwise,
-	 * the ball must always be to its right, regardless of the
+	 * the ball must always be to its left, regardless of the
 	 * gradient of the track.
 	 */
-	bool inside = 1; // Are we inside?
+	bool inside = 1; // Are we outside?
 	int position = -1; // -1 when on right.
 
 	int i;
 	for (i = 0; i < 6 - 1; i++) {
 		position = sign( (xCoords[i + 1] - xCoords[i])*(ballYCoord - yCoords[i])
 					   - (yCoords[i + 1] - yCoords[i])*(ballXCoord - xCoords[i]) );
-		inside = inside & (position == -1);
+		inside = inside & (position == 1);
 	}
 
 	position = sign( (xCoords[0] - xCoords[5])*(ballYCoord - yCoords[5])
 				   - (yCoords[0] - yCoords[5])*(ballXCoord - xCoords[5]) );
-	inside = inside & (position == -1);
+	inside = inside & (position == 1);
 	
 	if (!inside) {
 		data->code = gameStatus_Fail;
@@ -153,106 +153,54 @@ void TiltMove_run(struct GameData * data) {
 	}
 }
 
-__attribute__((section(".rodata"))) void init(struct GameData * data) {
+__attribute__((section(".rodata"))) static void init(struct GameData * data) {
 	// Initialise random number generator. (do we want to do this?)
 	if (!randomInit) {
 		init_rand(23);
 		randomInit = 1;
 	}
 	
-	// Set start and finish to random locations.
-	aXCoord = (rand_cmwc() % 90) + 10;
-	aYCoord = (rand_cmwc() % 30) + 10;
-	bXCoord = (rand_cmwc() % 90) + 10;
-	bYCoord = (rand_cmwc() % 30) + 10 + 70;
-	
-	// If A and B aren't different enough, re-init next time.
-	if (aXCoord - bXCoord < (radius * 5) || aYCoord - bYCoord < (radius * 5)) {
-		return;
-	}
-	
-	// Maybe flip.
-	if (rand_cmwc() % 2 == 1) {
-		int temp = aXCoord;
-		aXCoord = aYCoord;
-		aYCoord = temp;
+	aXCoord = aYCoord = bXCoord = bYCoord = 0;
+
+	while (abs(aXCoord - bXCoord) < (radius * 5) || abs(aYCoord - bYCoord) < (radius * 5)) {
+		// Set start and finish to random locations.
+		aXCoord = (rand_cmwc() % 90) + 10;
+		aYCoord = (rand_cmwc() % 30) + 10;
+		bXCoord = (rand_cmwc() % 90) + 10;
+		bYCoord = (rand_cmwc() % 30) + 10 + 70;
 		
-		temp = bXCoord;
-		bXCoord = bYCoord;
-		bYCoord = temp;
-	}
-		
+		// Maybe flip.
+		if (rand_bool() == TRUE) {
+			int temp = aXCoord;
+			aXCoord = aYCoord;
+			aYCoord = temp;
+			
+			temp = bXCoord;
+			bXCoord = bYCoord;
+			bYCoord = temp;
+		}
+	}	
 	initialised = 1;
 	
-	// Find out if we have a negative gradient for the path.
-	if (bXCoord - aXCoord < 0 && bYCoord - aYCoord < 0) {
-		negativeGradient = 1;
-	} else {
-		negativeGradient = 0;
-	}
+	float l = 9;
+	float ux = 9 * cos(atan2(bYCoord - aYCoord, bXCoord - aXCoord));
+	float uy = 9 * sin(atan2(bYCoord - aYCoord, bXCoord - aXCoord));
 	
-	// Find out if A is below B.
-	if (aYCoord - bYCoord < 0) {
-		aAtBottom = 1;
-	} else {
-		aAtBottom = 0;
-	}
-	
-	// Set up the coordinates of the track.
-	if (negativeGradient && aAtBottom) {
-		xCoords[0] = aXCoord - (radius * radMult); 
-		xCoords[1] = bXCoord - (radius * radMult);
-		xCoords[2] = bXCoord + (radius * radMult);
-		xCoords[3] = bXCoord + (radius * radMult);
-		xCoords[4] = aXCoord + (radius * radMult);
-		xCoords[5] = aXCoord - (radius * radMult);
-		yCoords[0] = aYCoord + (radius * radMult); 
-		yCoords[1] = bYCoord + (radius * radMult); 
-		yCoords[2] = bYCoord + (radius * radMult);
-		yCoords[3] = bYCoord - (radius * radMult);
-		yCoords[4] = aYCoord - (radius * radMult);
-		yCoords[5] = aYCoord - (radius * radMult);
-	} else if (negativeGradient && !aAtBottom) {
-		xCoords[0] = bXCoord - (radius * radMult);
-		xCoords[1] = aXCoord - (radius * radMult); 
-		xCoords[2] = aXCoord + (radius * radMult);
-		xCoords[3] = aXCoord + (radius * radMult);
-		xCoords[4] = bXCoord + (radius * radMult);
-		xCoords[5] = bXCoord - (radius * radMult);
-		yCoords[0] = bYCoord + (radius * radMult); 
-		yCoords[1] = aYCoord + (radius * radMult); 
-		yCoords[2] = aYCoord + (radius * radMult);
-		yCoords[3] = aYCoord - (radius * radMult);
-		yCoords[4] = bYCoord - (radius * radMult);
-		yCoords[5] = bYCoord - (radius * radMult);
-	} else if (!negativeGradient && aAtBottom) {
-		xCoords[0] = bXCoord - (radius * radMult); 
-		xCoords[1] = bXCoord + (radius * radMult); 
-		xCoords[2] = aXCoord + (radius * radMult);
-		xCoords[3] = aXCoord + (radius * radMult);
-		xCoords[4] = aXCoord - (radius * radMult);
-		xCoords[5] = bXCoord - (radius * radMult);
-		yCoords[0] = bYCoord + (radius * radMult); 
-		yCoords[1] = bYCoord + (radius * radMult); 
-		yCoords[2] = aYCoord + (radius * radMult);
-		yCoords[3] = aYCoord - (radius * radMult);
-		yCoords[4] = aYCoord - (radius * radMult);
-		yCoords[5] = bYCoord - (radius * radMult);
-	} else if (!negativeGradient && !aAtBottom) {
-		xCoords[0] = aXCoord - (radius * radMult);
-		xCoords[1] = aXCoord + (radius * radMult); 
-		xCoords[2] = bXCoord + (radius * radMult);
-		xCoords[3] = bXCoord + (radius * radMult);
-		xCoords[4] = bXCoord - (radius * radMult);
-		xCoords[5] = aXCoord - (radius * radMult);
-		yCoords[0] = aYCoord + (radius * radMult); 
-		yCoords[1] = aYCoord + (radius * radMult); 
-		yCoords[2] = bYCoord + (radius * radMult);
-		yCoords[3] = bYCoord - (radius * radMult);
-		yCoords[4] = bYCoord - (radius * radMult);
-		yCoords[5] = aYCoord - (radius * radMult);
-	}
-	
+
+	xCoords[0] = aXCoord - uy;
+	xCoords[1] = aXCoord - ux;
+	xCoords[2] = aXCoord + uy;
+	xCoords[3] = bXCoord + uy;
+	xCoords[4] = bXCoord + ux;
+	xCoords[5] = bXCoord - uy;
+
+	yCoords[0] = aYCoord + ux;
+	yCoords[1] = aYCoord - uy;
+	yCoords[2] = aYCoord - ux; 
+	yCoords[3] = bYCoord - ux;
+	yCoords[4] = bYCoord + uy;
+	yCoords[5] = bYCoord + ux;
+
 	// Set game status to "in progress".
 	data->code = gameStatus_InProgress;
 	
@@ -295,7 +243,7 @@ __attribute__((section(".rodata"))) void init(struct GameData * data) {
 	TIMER_disableTimer(TILTMOVE_TIMER_DRAWING); // This one is disabled for initial drawing.
 }
 
-__attribute__((section(".rodata"))) void end(struct GameData * data) {
+__attribute__((section(".rodata"))) static void end(struct GameData * data) {
 	initialised = 0;
 	randomInit = 0;
 }
