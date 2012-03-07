@@ -1113,7 +1113,7 @@ void RCC_APB2PeriphClockCmd(uint32_t RCC_APB2Periph, FunctionalState NewState)
     RCC->APB2ENR &= ~RCC_APB2Periph;
   }
 }
-#if 0
+
 /**
   * @brief  Enables or disables the Low Speed APB (APB1) peripheral clock.
   * @param  RCC_APB1Periph: specifies the APB1 peripheral to gates its clock.
@@ -1143,7 +1143,7 @@ void RCC_APB1PeriphClockCmd(uint32_t RCC_APB1Periph, FunctionalState NewState)
     RCC->APB1ENR &= ~RCC_APB1Periph;
   }
 }
-
+#if 0
 #ifdef STM32F10X_CL
 /**
   * @brief  Forces or releases AHB peripheral reset.
