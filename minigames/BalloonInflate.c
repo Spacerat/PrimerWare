@@ -117,8 +117,6 @@ void BalloonInflate_run(struct GameData * data) {
 		BalloonInflate_end();
 		data->code = gameStatus_Success;
 		data->score = TIMER_ticksLeft(BALLOONINFLATE_TIMER_GAME);
-	} else {
-		data->code = gameStatus_InProgress;
 	}
 
 }

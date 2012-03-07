@@ -23,7 +23,11 @@ u8 RXbufferIndex = 0;              //Counts data in the RX buffer
 static u8 lastpacket_type;         //This is set when the last packet is received
 static u8 net_flags = 0;
 
-#define send_delay 12;
+#ifdef USE_IR
+	#define send_delay 12
+#else
+	#define send_delay 3
+#endif
 static u16 send_countdown = send_delay;
 
 static bool clear_RX_buffer_at_next_tick = TRUE;
@@ -48,7 +52,6 @@ static bool clear_RX_buffer_at_next_tick = TRUE;
 #endif
 
 /* ----------------- Configuration things ---------------- */
-
 /* Configure GPIO
 Taken from SPI CRC Example */
 void GPIO_Configuration(void)
@@ -125,22 +128,17 @@ void Net_Configuration(void)
 }
 
 
-/* Configure Clock
-Taken from SPI CRC Example */
+/* Enable peripheral clocks
+Taken from Serial/IR examples */
 void NET_RCC_Configuration(void)
 {
-	/* PCLK2 = HCLK/2 */
-	//RCC_PCLK2Config(RCC_HCLK_Div2);
-#if defined(USE_USART)
-
-    //Enable peripheral clocks
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
     RCC_APB2PeriphClockCmd(GPIO_CLK, ENABLE);
+#if defined(USE_IR)   
 	RCC_APB2PeriphClockCmd(USARTx_CLK, ENABLE);
-
+#elif defined(USE_SERIAL)
+	RCC_APB1PeriphClockCmd(USARTx_CLK, ENABLE);
 #endif
-	/* SPI2 Periph clock enable */
-	//RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, ENABLE);
 }
 
 /* Call this once to set up the networking code.
@@ -247,7 +245,6 @@ Return value may include a number of flags:
 */
 u8 NET_Tick(void)
 {
-	USART_SendData(USART2,(u8)'g');
 	//If a packet was received last tick, it should have been dealt with by now.
 	//discard it from memory
 	if (clear_RX_buffer_at_next_tick == TRUE) {
