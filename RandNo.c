@@ -4,7 +4,9 @@
 * Description        :  Generates random numbers.
 *
 *******************************************************************************/
-#define PHI 0x9e3779b9 //(Joe: lol.)
+#include "RandNo.h"
+
+#define PHI 0x9e3779b9
 
 static int Q[32], c = 65535;
  
