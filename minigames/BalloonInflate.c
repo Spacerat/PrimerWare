@@ -117,8 +117,6 @@ void BalloonInflate_run(struct GameData * data) {
 		BalloonInflate_end();
 		data->code = gameStatus_Success;
 		data->score = TIMER_ticksLeft(BALLOONINFLATE_TIMER_GAME);
-	//} else {
-		// data->code = gameStatus_InProgress; // NO! The game will never exit.
 	}
 
 }
@@ -128,7 +126,7 @@ void BalloonInflate_init(struct GameData * data) {
 	data->code = gameStatus_InProgress;
 	DRAW_Clear();
 	BalloonInflate_taps = 1; // Set to 1 to draw initial balloon.
-	TIMER_initTimer(BALLOONINFLATE_TIMER_GAME, TIME_SECOND * 5);
+	TIMER_initTimer(BALLOONINFLATE_TIMER_GAME, TIME_SECOND * 50);
 	TIMER_initTimer(BALLOONINFLATE_TIMER_INSTRUCTIONS, TIME_SECOND);
 	BalloonInflate_initialised = 1;
 	DRAW_DisplayStringWithMode(0,

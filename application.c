@@ -62,9 +62,14 @@ enum MENU_code Application_Ini(void) {
 	
 	// Initialise the PRNG.
 	init_rand(234);
-    
-	return MENU_CONTINUE_COMMAND;
+   	NET_RCC_Configuration();
+
+	UTIL_SetPll(SPEED_VERY_HIGH);
+	MENU_SetAppliDivider(10);
+	NET_enableTransmission( TRUE );
+    return MENU_CONTINUE_COMMAND;
 }
+
 
 static gameRunFunction minigameArray[ROUNDLENGTH]; // Holds current minigames
 static u8 numMinigames;
@@ -228,34 +233,26 @@ enum MENU_code Application_Handler(void)
 	} else if (screen == display_Game) {
 		// Run the current game and get its status.
 	
-		/*
-		TODO:: 
-		       IF WE ARE THE MASTER, SEND THEM BASED ON THE GAME STATUS
-		*/
-		
 		if (gamedata.code == gameStatus_InProgress) {
 			minigameArray[currentMinigame](&gamedata);	
 		}
 		//Slave is not allowed to decide whether it has won.
-		if (gamedata.isHost == FALSE && gamedata.mode != Game_SinglePlayer) gamedata.code = gameStatus_InProgress;
-	
+
+		if (gamedata.isHost == FALSE) gamedata.code = gameStatus_InProgress;
+
 		// Slave checks for "You win/lose!" packets and overrides the 
 		// game's reported status. Also receives increments score
 		if (gamedata.isHost == FALSE && (NET_GetFlags() & NETTICK_FLAG_RX)) {
 			u8 type = NET_GetPacketType();
 			u8 buff[PACKET_MAX_SIZE];
-		
-			switch (type) {
-				case PACKET_gameWon:
-				case PACKET_gameFail:
-					NET_GetPacketData(buff);
-					score += ((u16 * )buff)[0];
-					gamedata.code = (type == PACKET_gameFail ? gameStatus_Fail : gameStatus_Success);
-					/*Run the game code again with the changed state.
-					The game is responsible for checking that it is no longer supposed
-					to be running, and so calling any teardown code. */
-					minigameArray[currentMinigame](&gamedata);	
-					break;
+			if (type == PACKET_gameWon || type == PACKET_gameFail) {
+				NET_GetPacketData(buff);
+				score += (u16 * )buff[0];
+				gamedata.code = (type == PACKET_gameFail ? gameStatus_Fail : gameStatus_Success);
+				//Run the game code again with the changed state.
+				//The game is responsible for checking that it is no longer supposed
+				//to be running, and so calling any teardown code.
+				minigameArray[currentMinigame](&gamedata);	
 			}
 		}
 	
