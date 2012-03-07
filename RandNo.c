@@ -21,9 +21,9 @@ __attribute__((section(".rodata"))) void init_rand(int x) {
 
 __attribute__((section(".rodata"))) unsigned int rand_cmwc(void) {
 	int t, a = 18782;
-	static int i = 4095;
+	static int i = 31;
 	int x, r = 0xfffffffe;
-	i = (i + 1) & 4095;
+	i = (i + 1) & 31;
 	t = a * Q[i] + c;
 	c = (t >> 16);
 	x = t + c;

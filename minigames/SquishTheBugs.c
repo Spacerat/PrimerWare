@@ -42,7 +42,7 @@ void SquishTheBugs_run(struct GameData * data) {
 	// Get touch event.
 	struct TouchEvent t = TOUCH_clickEvent();
 	
-	if (t.type == TouchType_Depressed) {
+	if (t.type == TouchType_Pressed) {
 		u8 xPos = (u8)(t.position);
 		u8 yPos = (u8)(t.position>>8);
 		
@@ -51,10 +51,10 @@ void SquishTheBugs_run(struct GameData * data) {
 		
 		for (i = 0; i < STB_BUGS; i++) {
 			if (bugAlive[i]) {
-				int xDelta = bugsX[i] - xPos;
-				int yDelta = bugsY[i] - yPos;
+				u8 xDelta = bugsX[i] - xPos;
+				u8 yDelta = bugsY[i] - yPos;
 				
-				if ((xDelta * xDelta) + (yDelta * yDelta) <= STB_BUG_SIZE * STB_BUG_SIZE * 1.2) {
+				if ((xDelta * xDelta) + (yDelta * yDelta) <= (STB_BUG_SIZE * STB_BUG_SIZE) + 3) {
 					// Draw a red circle as it has been squished.
 					DRAW_Circle(bugsX[i],
 								bugsY[i],
@@ -63,6 +63,8 @@ void SquishTheBugs_run(struct GameData * data) {
 					
 					// Kill the bug.
 					bugAlive[i] = 0;
+					
+					bugsLeft--;
 				}
 			}
 		}		
@@ -75,18 +77,18 @@ void SquishTheBugs_run(struct GameData * data) {
 		
 		if (bugAlive[i]) {
 			// Can move left or right...
-			if (rand_bool()) {
-				bugsX[i] = (bugsX[i] + ((rand_cmwc() % 10) / 10));
-			} else {
-				bugsX[i] = (bugsX[i] - ((rand_cmwc() % 10) / 10));
-			}
+			//if (rand_bool()) {
+				bugsX[i] = (bugsX[i] + ((rand_cmwc() % 20) / 10));
+			//} else {
+				bugsX[i] = (bugsX[i] - ((rand_cmwc() % 20) / 10));
+			//}
 			
 			// ... or up or down.
-			if (rand_bool()) {
-				bugsY[i] = (bugsY[i] + ((rand_cmwc() % 10) / 10));
-			} else {
-				bugsY[i] = (bugsY[i] - ((rand_cmwc() % 10) / 10));
-			}
+			//if (rand_bool()) {
+				bugsY[i] = (bugsY[i] + ((rand_cmwc() % 20) / 10));
+			//} else {
+				bugsY[i] = (bugsY[i] - ((rand_cmwc() % 20) / 10));
+			//}
 			
 			// Let the screen wrap around.
 			if (bugsX[i] > SCREEN_WIDTH) bugsX[i] = bugsX[i] - SCREEN_WIDTH;
@@ -114,10 +116,21 @@ static void init(struct GameData * data) {
 	// Initialise the bugs.
 	int i;
 	
-	for (i = 0; i < STB_BUGS; i++) {
-		bugsX[i] = (rand_cmwc() % 100) + 10;
-		bugsY[i] = (rand_cmwc() % 100) + 10;
+	bugsX[0] = (rand_cmwc() % 100) + 10;
+	bugsY[0] = (rand_cmwc() % 100) + 10;
+	bugAlive[0] = 1;
+	
+	for (i = 1; i < STB_BUGS; i++) {
+		bugsX[i] = bugsX[i - 1] + (rand_cmwc() % 100) + 10;
+		bugsY[i] = bugsY[i - 1] + (rand_cmwc() % 100) + 10;
 		bugAlive[i] = 1;
+		
+		// Let the screen wrap around.
+		if (bugsX[i] > SCREEN_WIDTH) bugsX[i] = bugsX[i] - SCREEN_WIDTH;
+		else if (bugsX[i] < 0) bugsX[i] = bugsX[i] + SCREEN_WIDTH;
+			
+		if (bugsY[i] > SCREEN_HEIGHT) bugsY[i] = bugsY[i] - SCREEN_HEIGHT;
+		else if (bugsY[i] < 0) bugsY[i] = bugsY[i] + SCREEN_HEIGHT;
 	}
 	
 	bugsLeft = STB_BUGS;
@@ -134,23 +147,18 @@ static void init(struct GameData * data) {
 	// Draw instructions.
 	DRAW_Clear();
 	DRAW_DisplayStringWithMode(0,
-							   75,
+							   68,
 							   "Squish the",
 							   ALL_SCREEN, 0, 1);
 	DRAW_DisplayStringWithMode(0,
-							   60,
+							   53,
 							   "bugs!",
-							   ALL_SCREEN, 0, 1);
-	DRAW_DisplayStringWithMode(0,
-							   45,
-							   "side!",
 							   ALL_SCREEN, 0, 1);
 							   
 	// Initialise timers.
 	TIMER_initTimer(STB_TIMER_GAME, TIME_SECOND * 6);
 	TIMER_initTimer(STB_TIMER_INSTRUCTIONS, TIME_SECOND * 2);
 	TIMER_disableTimer(STB_TIMER_DRAWING); // This one is disabled for initial drawing.
-
 }
 
 static void draw(void) {

@@ -7,7 +7,7 @@
 
 #include "circle_api.h"
 
-#define TIMER_NOTIMERS 10
+#define TIMER_NOTIMERS 10 + 1 // Add 1!
 
 static unsigned int timers[TIMER_NOTIMERS]; // Array of ints to hold timer 
 											// values.

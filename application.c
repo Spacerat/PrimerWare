@@ -343,25 +343,34 @@ enum MENU_code Application_Handler(void)
 			}
 		}
 	} else if (screen == display_RoundFinish) {
+		
 		static bool screenDrawn = FALSE;
 		
 		if (!screenDrawn) {
 			GAMEDRAW_roundFinished(score, lives);
 			screenDrawn = TRUE;
+			if (!TIMER_isEnabled(10)) TIMER_initTimer(10, TIME_SECOND * 1);
 		}
 		
-		if (TOUCH_clickEvent().type == TouchType_Depressed) {
-			MENUHANDLER_setDrawn(FALSE);
-			//Reset *everything*
-			screen = display_Menu;
-			gamedata.mode = Game_None;
-			lives = 3;
-			score = 0;
-			currentMinigame = 0;
-			screenDrawn = FALSE;
-			gameRequested = FALSE;
-			gamesPlayed = 0;
-			NET_enableTransmission( TRUE );
+		static struct TouchEvent t;
+		t = TOUCH_clickEvent();
+		
+		if (TIMER_checkTimer(10)) {			
+			
+			if (t.type == TouchType_Depressed) {
+				MENUHANDLER_setDrawn(FALSE);
+				//Reset *everything*
+				screen = display_Menu;
+				gamedata.mode = Game_None;
+				lives = 3;
+				score = 0;
+				currentMinigame = 0;
+				screenDrawn = FALSE;
+				gameRequested = FALSE;
+				gamesPlayed = 0;
+				NET_enableTransmission( TRUE );
+				TIMER_disableTimer(10);
+			}
 		}
 	}
 		
