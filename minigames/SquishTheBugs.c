@@ -5,10 +5,12 @@
 *
 *******************************************************************************/
 
-#include "circle_api.h"
+
 #include "../Net.h"
+#include "../GameHandler.h"
 #include "../Touchscreen.h"
 #include "../Timer.h"
+#include "circle_api.h"
 
 #define STB_TIMER_GAME 1
 #define STB_TIMER_INSTRUCTIONS 2
@@ -22,9 +24,9 @@ static float bugsY[STB_BUGS]; // Y coordinates of bugs.
 static bool bugAlive[STB_BUGS]; // Is the bug dead?
 static int bugsLeft; // How many bugs remain?
 
-void init(struct GameData * data);
-void end(struct GameData * data);
-void draw(void);
+static void init(struct GameData * data);
+static void end(struct GameData * data);
+static void draw(void);
 
 void SquishTheBugs_run(struct GameData * data) {
 	if (!initialised) init(data);
@@ -35,7 +37,7 @@ void SquishTheBugs_run(struct GameData * data) {
 	}
 		
 	// Draw the living bugs.
-	if (!TIMER_isEnabled(STB_TIMER_DRAWING) || TIMER_checkTimer(STB_TIMER_DRAWING ) draw();
+	if (!TIMER_isEnabled(STB_TIMER_DRAWING) || TIMER_checkTimer(STB_TIMER_DRAWING )) draw();
 
 	// Get touch event.
 	struct TouchEvent t = TOUCH_clickEvent();
@@ -99,15 +101,15 @@ void SquishTheBugs_run(struct GameData * data) {
 	if (bugsLeft == 0) {
 		data->code = gameStatus_Success;
 		data->score = TIMER_ticksLeft(STB_TIMER_GAME);
-		end();
+		end(data);
 	} else if (TIMER_checkTimer(STB_TIMER_GAME)) {
 		data->code = gameStatus_Fail;
-		end();
+		end(data);
 	}
 	
 }
 
-void init(struct GameData * data) {
+static void init(struct GameData * data) {
 	
 	// Initialise the bugs.
 	int i;
@@ -151,7 +153,7 @@ void init(struct GameData * data) {
 
 }
 
-void draw(void) {
+static void draw(void) {
 	DRAW_Clear();
 	
 	// Reinitialise the timer.
@@ -170,6 +172,6 @@ void draw(void) {
 	}
 }
 
-void end(struct GameData * data) {
+static void end(struct GameData * data) {
 	initialised = 0;
 }
