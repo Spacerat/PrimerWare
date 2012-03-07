@@ -17,14 +17,14 @@ static bool menuDrawn = 0; // Has the (players) menu been drawn yet?
 /*
  * Set the menu as drawn (or not) so it will redraw.
  */
-enum MenuCode MENUHANDLER_setDrawn(bool drawn) {
+__attribute__((section(".rodata"))) enum MenuCode MENUHANDLER_setDrawn(bool drawn) {
 	menuDrawn = drawn;
 }
 
 /*
  * Main menu call.
  */
-enum MenuCode MENUHANDLER_run() {
+__attribute__((section(".rodata"))) enum MenuCode MENUHANDLER_run() {
 	static bool playersMenu = 1; // Are we on the players menu?
 	
 	// Draw the menu if it hasn't already been drawn.
@@ -66,9 +66,9 @@ enum MenuCode MENUHANDLER_run() {
 	return MenuCode_Nothing;
 }
 
-void MENUHANDLER_SinglePlayer(void) { }
-void MENUHANDLER_MultiPlayer(void) { 
+__attribute__((section(".rodata"))) void MENUHANDLER_SinglePlayer(void) { }
+__attribute__((section(".rodata"))) void MENUHANDLER_MultiPlayer(void) { 
 	MENUDRAW_drawTwoPlayerGameTypeMenu();
 }
-void MENUHANDLER_CoOp(void) { }
-void MENUHANDLER_Vs(void) { }
+__attribute__((section(".rodata"))) void MENUHANDLER_CoOp(void) { }
+__attribute__((section(".rodata"))) void MENUHANDLER_Vs(void) { }

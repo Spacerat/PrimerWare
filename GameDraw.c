@@ -8,7 +8,7 @@
 
 #include "circle_api.h"
 
-void GAMEDRAW_stageN(unsigned int n) {
+__attribute__((section(".rodata"))) void GAMEDRAW_stageN(unsigned int n) {
 	char stageNoString[2];
 	
 	UTIL_uint2str(stageNoString, n, 2, 0);
@@ -22,17 +22,17 @@ void GAMEDRAW_stageN(unsigned int n) {
 	DRAW_DisplayStringWithMode(0, 60, stageTextString, ALL_SCREEN, 1, 1);
 }
 
-void GAMEDRAW_stageSuccess(void) {
+__attribute__((section(".rodata"))) void GAMEDRAW_stageSuccess(void) {
 	DRAW_Clear();
 	
 	DRAW_DisplayStringWithMode(0, 60, "Stage Cleared!", ALL_SCREEN, 1, 1);
 }
-void GAMEDRAW_stageFail(void) {
+__attribute__((section(".rodata"))) void GAMEDRAW_stageFail(void) {
 	DRAW_Clear();
 	
 	DRAW_DisplayStringWithMode(0, 60, "Stage Failed D:", ALL_SCREEN, 1, 1);
 }
-void GAMEDRAW_roundFinished(int score, int lives) {
+__attribute__((section(".rodata"))) void GAMEDRAW_roundFinished(int score, int lives) {
 	char scoreString[8];
 	char livesString[1];
 

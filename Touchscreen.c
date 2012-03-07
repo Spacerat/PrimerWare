@@ -10,7 +10,7 @@
 #include "Touchscreen.h"
 
 //Todo: maybe take a TouchEvent pointer as an argument instead?
-struct TouchEvent TOUCH_clickEvent(void) {
+__attribute__((section(".rodata"))) struct TouchEvent TOUCH_clickEvent(void) {
 	static struct TouchEvent touchEvent;
 	static bool lastTouch = 0;
 
