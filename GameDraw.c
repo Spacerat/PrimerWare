@@ -28,7 +28,7 @@ __attribute__((section(".rodata"))) void GAMEDRAW_stageSuccess(void) {
 	DRAW_DisplayStringWithMode(0, 60, "Stage Cleared!", ALL_SCREEN, 1, 1);
 }
 __attribute__((section(".rodata"))) void GAMEDRAW_stageFail(void) {
-	DRAW_Clear();
+	//DRAW_Clear();
 	
 	DRAW_DisplayStringWithMode(0, 60, "Stage Failed D:", ALL_SCREEN, 1, 1);
 }
