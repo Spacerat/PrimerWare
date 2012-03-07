@@ -16,11 +16,12 @@
 #define STB_TIMER_INSTRUCTIONS 2
 #define STB_TIMER_DRAWING 3
 #define STB_BUGS 5 // Number of bugs.
-#define STB_BUG_SIZE 2 // Radius of bugs.
+#define STB_BUG_SIZE 6 // Radius of bugs.
 
 static bool initialised = 0;
 static float bugsX[STB_BUGS]; // X coordinates of bugs.
 static float bugsY[STB_BUGS]; // Y coordinates of bugs.
+static float bugsDir[STB_BUGS]; //Bug directions
 static bool bugAlive[STB_BUGS]; // Is the bug dead?
 static int bugsLeft; // How many bugs remain?
 
@@ -48,13 +49,16 @@ void SquishTheBugs_run(struct GameData * data) {
 		
 		// Have we squashed any bugs?
 		int i;
-		
+		DRAW_Circle(xPos,
+					yPos,
+					12,
+					RGB_RED,RGB_RED, 1, 1);
 		for (i = 0; i < STB_BUGS; i++) {
 			if (bugAlive[i]) {
-				u8 xDelta = bugsX[i] - xPos;
-				u8 yDelta = bugsY[i] - yPos;
+				float xDelta = bugsX[i] - xPos;
+				float yDelta = bugsY[i] - yPos;
 				
-				if ((xDelta * xDelta) + (yDelta * yDelta) <= (STB_BUG_SIZE * STB_BUG_SIZE) + 3) {
+				if ((xDelta * xDelta) + (yDelta * yDelta) <= (STB_BUG_SIZE * STB_BUG_SIZE)+1) {
 					// Draw a red circle as it has been squished.
 					DRAW_Circle(bugsX[i],
 								bugsY[i],
@@ -76,6 +80,10 @@ void SquishTheBugs_run(struct GameData * data) {
 	for (i = 0; i < STB_BUGS; i++) {
 		
 		if (bugAlive[i]) {
+			//bugsDir[i] += ((rand_cmwc() % 10) / 100.0) - 0.05;
+			//bugsX[i] += 1.0 * cos(bugsDir[i]);
+			//bugsY[i] += 1.0 * sin(bugsDir[i]);
+		
 			// Can move left or right...
 			//if (rand_bool()) {
 				bugsX[i] = (bugsX[i] + ((rand_cmwc() % 20) / 10));
@@ -123,6 +131,7 @@ static void init(struct GameData * data) {
 	for (i = 1; i < STB_BUGS; i++) {
 		bugsX[i] = bugsX[i - 1] + (rand_cmwc() % 100) + 10;
 		bugsY[i] = bugsY[i - 1] + (rand_cmwc() % 100) + 10;
+		bugsDir[i] = (rand_cmwc() % 360) / 360.0;
 		bugAlive[i] = 1;
 		
 		// Let the screen wrap around.
@@ -165,7 +174,7 @@ static void draw(void) {
 	DRAW_Clear();
 	
 	// Reinitialise the timer.
-	TIMER_initTimer(STB_TIMER_DRAWING, 20);
+	TIMER_initTimer(STB_TIMER_DRAWING, 5);
 	
 	// Draw the bugs.
 	int i;
