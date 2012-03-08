@@ -163,7 +163,7 @@ static void play(struct GameData * data) {
 
 	if (data->mode == Game_CoOp) {
 		
-		if (!(NET_GetFlags() && NETTICK_FLAG_TX)) {
+		if (!(NET_GetFlags() & NETTICK_FLAG_TX)) {
 			float buff[2];
 			buff[1] = '0';
 			if (data->isHost)
