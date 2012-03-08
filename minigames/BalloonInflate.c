@@ -60,6 +60,8 @@ void BalloonInflate_run(struct GameData * data) {
 		BalloonInflate_end();
 		return;
 	}
+	
+
 	// Check if we've displayed the instructions for long enough.	
 	if (!TIMER_checkTimer(BALLOONINFLATE_TIMER_INSTRUCTIONS))
 		return;
@@ -119,6 +121,7 @@ void BalloonInflate_run(struct GameData * data) {
 		data->score = TIMER_ticksLeft(BALLOONINFLATE_TIMER_GAME);
 	}
 
+	TIMER_drawTicker(BALLOONINFLATE_TIMER_GAME);
 }
 
 void BalloonInflate_init(struct GameData * data) {
@@ -126,7 +129,7 @@ void BalloonInflate_init(struct GameData * data) {
 	data->code = gameStatus_InProgress;
 	DRAW_Clear();
 	BalloonInflate_taps = 1; // Set to 1 to draw initial balloon.
-	TIMER_initTimer(BALLOONINFLATE_TIMER_GAME, TIME_SECOND * 50);
+	TIMER_initTimer(BALLOONINFLATE_TIMER_GAME, TIME_SECOND * 5);
 	TIMER_initTimer(BALLOONINFLATE_TIMER_INSTRUCTIONS, TIME_SECOND);
 	BalloonInflate_initialised = 1;
 	DRAW_DisplayStringWithMode(0,
