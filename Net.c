@@ -246,6 +246,7 @@ Return value may include a number of flags:
 */
 __attribute__((section(".rodata"))) u8 NET_Tick(void)
 {
+	net_flags = 0;
 	//If a packet was received last tick, it should have been dealt with by now.
 	//discard it from memory
 	if (clear_RX_buffer_at_next_tick == TRUE) {
@@ -260,12 +261,12 @@ __attribute__((section(".rodata"))) u8 NET_Tick(void)
 	}
 
 	//Send any data sitting in the buffer.
-	if (!cbIsEmpty(&TXbuffer) && ((GetFlagStatus(FLAG_TXE) != RESET))) {
+	if (!cbIsEmpty(&TXbuffer) && (GetFlagStatus(FLAG_TXE) != RESET)) {
+		net_flags |= NETTICK_FLAG_TX;
 		if (send_countdown == 0) {
 			char data;
 			cbRead(&TXbuffer, &data);
 			SendData((u8)data);
-			net_flags |= NETTICK_FLAG_TX;
 			send_countdown = send_delay;
 		}
 		else {
