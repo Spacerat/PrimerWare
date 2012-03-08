@@ -42,3 +42,9 @@ __attribute__((section(".rodata"))) void TIMER_disableTimer(unsigned int timerNo
 __attribute__((section(".rodata"))) bool TIMER_isEnabled(unsigned int timerNo) {
 	return timerActive[timerNo];
 }
+
+void TIMER_drawTicker(unsigned int timerNo) {
+	LCD_FillRect( 0, 5, SCREEN_WIDTH, 5, RGB_BLACK);
+	LCD_FillRect( 0, 0, SCREEN_WIDTH, 4, RGB_GREEN);
+	LCD_FillRect( 0, 0, SCREEN_WIDTH * ((float)timers[timerNo] / timerMax[timerNo]), 4, RGB_RED);
+}
