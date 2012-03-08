@@ -5,7 +5,7 @@
 *
 *******************************************************************************/
 
-
+#include <malloc.h>
 #include "../Net.h"
 #include "../GameHandler.h"
 #include "../Touchscreen.h"
@@ -15,14 +15,17 @@
 #define STB_TIMER_GAME 1
 #define STB_TIMER_INSTRUCTIONS 2
 #define STB_TIMER_DRAWING 3
-#define STB_BUGS 5 // Number of bugs.
+#define STB_BUGS_MP 10 // Number of bugs in multiplayer
+#define STB_BUGS_SP 5 // Number of bugs in singpleplayer
 #define STB_BUG_SIZE 6 // Radius of bugs.
 
+
+static bool numBugs = 0;
 static bool initialised = 0;
-static float bugsX[STB_BUGS]; // X coordinates of bugs.
-static float bugsY[STB_BUGS]; // Y coordinates of bugs.
-static float bugsDir[STB_BUGS]; //Bug directions
-static bool bugAlive[STB_BUGS]; // Is the bug dead?
+static float * bugsX; // X coordinates of bugs.
+static float * bugsY; // Y coordinates of bugs.
+static float * bugsDir; //Bug directions
+static bool * bugAlive; // Is the bug dead?
 static int bugsLeft; // How many bugs remain?
 
 static void init(struct GameData * data);
@@ -53,7 +56,7 @@ void SquishTheBugs_run(struct GameData * data) {
 					yPos,
 					12,
 					RGB_RED,RGB_RED, 1, 1);
-		for (i = 0; i < STB_BUGS; i++) {
+		for (i = 0; i < numBugs; i++) {
 			if (bugAlive[i]) {
 				float xDelta = bugsX[i] - xPos;
 				float yDelta = bugsY[i] - yPos;
@@ -77,7 +80,7 @@ void SquishTheBugs_run(struct GameData * data) {
 	// Update the bugs positions.
 	int i;
 	
-	for (i = 0; i < STB_BUGS; i++) {
+	for (i = 0; i < numBugs; i++) {
 		
 		if (bugAlive[i]) {
 			//bugsDir[i] += ((rand_cmwc() % 10) / 100.0) - 0.05;
@@ -123,12 +126,25 @@ static void init(struct GameData * data) {
 	
 	// Initialise the bugs.
 	int i;
+
 	
+
+	if (data->mode == Game_SinglePlayer)
+		numBugs = STB_BUGS_SP;
+	else
+		numBugs = STB_BUGS_MP;
+	
+	bugsX = (float * )malloc(sizeof(float) * numBugs);
+	bugsY = malloc(sizeof(float) * numBugs);
+	bugsDir = malloc(sizeof(float) * numBugs);
+	bugAlive = malloc(sizeof(float) * numBugs);
+	
+
 	bugsX[0] = (rand_cmwc() % 100) + 10;
 	bugsY[0] = (rand_cmwc() % 100) + 10;
 	bugAlive[0] = 1;
 	
-	for (i = 1; i < STB_BUGS; i++) {
+	for (i = 1; i < numBugs; i++) {
 		bugsX[i] = bugsX[i - 1] + (rand_cmwc() % 100) + 10;
 		bugsY[i] = bugsY[i - 1] + (rand_cmwc() % 100) + 10;
 		bugsDir[i] = (rand_cmwc() % 360) / 360.0;
@@ -142,7 +158,7 @@ static void init(struct GameData * data) {
 		else if (bugsY[i] < 0) bugsY[i] = bugsY[i] + SCREEN_HEIGHT;
 	}
 	
-	bugsLeft = STB_BUGS;
+	bugsLeft = numBugs;
 	
 	initialised = 1;
 	
@@ -172,14 +188,14 @@ static void init(struct GameData * data) {
 
 static void draw(void) {
 	DRAW_Clear();
-	
+	TIMER_drawTicker(STB_TIMER_GAME);
 	// Reinitialise the timer.
 	TIMER_initTimer(STB_TIMER_DRAWING, 5);
 	
 	// Draw the bugs.
 	int i;
 	
-	for (i = 0; i < STB_BUGS; i++) {
+	for (i = 0; i < numBugs; i++) {
 		if (bugAlive[i]) {
 			DRAW_Circle(bugsX[i],
 						bugsY[i],
@@ -191,4 +207,8 @@ static void draw(void) {
 
 static void end(struct GameData * data) {
 	initialised = 0;
+	free(bugsX);
+	free(bugsY);
+	free(bugsDir);
+	free(bugAlive);
 }
