@@ -5,6 +5,7 @@
 *
 *******************************************************************************/
 
+#include "../Net.h"
 #include "../GameHandler.h"
 #include "BalloonInflate.h"
 #include "circle_api.h"
@@ -17,7 +18,13 @@
 #define TILTMOVE_TIMER_INSTRUCTIONS 2
 #define TILTMOVE_TIMER_DRAWING 3
 
-static bool initialised = 0; // Have we initialised yet?
+static enum Tiltmove_State {
+	TM_State_START,
+	TM_State_INSTRUCTIONS,
+	TM_State_PLAYING
+} state;
+
+
 static float ballXCoord; // X coordinate of the ball.
 static float ballYCoord; // Y coordinate of the ball.
 static int aXCoord; // X coordinate of A point.
@@ -36,7 +43,9 @@ static bool randomInit = 0; // Have we initialised the PRNG?
 
 static void init(struct GameData * data);
 static void end(struct GameData * data);
-
+static void beginPlay(struct GameData * data);
+static void play(struct GameData * data);
+	
 int sign(float x) {
 	if (x > 0) return 1;
 	if (x < 0) return -1;
@@ -49,23 +58,61 @@ float absolute(float x) {
 }
 
 void TiltMove_run(struct GameData * data) {
-	if (!initialised) {
-		init(data);
+	
+	//Check if the game is no longer supposed to be running, and run de-initialisation code if that's the case.
+	if (data->code != gameStatus_InProgress) {
+		end(data);
 		return;
 	}
-	
-	// Check if we've displayed the instructions for long enough.
-	if (!TIMER_checkTimer(TILTMOVE_TIMER_INSTRUCTIONS)) {
-		// Get initial MEMS position. This will ensure our MEMS is correct at the end of
-		// displaying instructions (ugly but meh).
-		prevMEMSX = (MEMS_GetInfo())->OutX_F4;
-		prevMEMSY = (MEMS_GetInfo())->OutY_F4;
-		
-		return;
+
+	switch (state) {
+		case TM_State_START:
+			init(data);
+			break;
+		case TM_State_INSTRUCTIONS:
+			if (data->isHost == FALSE && NET_GetFlags() & NETTICK_FLAG_RX && NET_GetPacketType() == 42) {
+				u8 buff[sizeof(int) * 4 + 1];
+				int * ibuff = (int*) buff;
+				NET_GetPacketData(buff);
+				aXCoord = ~ibuff[0];
+				aYCoord = ~ibuff[1];
+				bXCoord = ~ibuff[2];
+				bYCoord = ~ibuff[3];
+				beginPlay(data);
+				break;
+			}
+			if (!TIMER_checkTimer(TILTMOVE_TIMER_INSTRUCTIONS)) {
+				prevMEMSX = (MEMS_GetInfo())->OutX_F4;
+				prevMEMSY = (MEMS_GetInfo())->OutY_F4;
+			}
+			else if (data->isHost == TRUE) {
+				if (data->mode != Game_SinglePlayer) {
+					//Send these co-ordinates to the client
+					u8 buff[sizeof(int) * 4];
+					int * ibuff = (int*) buff;
+					ibuff[0] = ~aXCoord;
+					ibuff[1] = ~aYCoord;
+					ibuff[2] = ~bXCoord;
+					ibuff[3] = ~bYCoord;
+					buff[sizeof(float) * 4] = 0;
+					//((u8 *) buff)[4 * sizeof(int) + 1] = '\0';
+					NET_TransmitStringPacket(42, (u8 * )buff);
+				}
+				beginPlay(data);
+				TIMER_disableTimer(TILTMOVE_TIMER_INSTRUCTIONS);
+			}
+			break;
+		case TM_State_PLAYING:
+			play(data);
+			break;
 	}
 	
+
+}
+
+static void play(struct GameData * data) {
 	// Have we run out of time?
-	if (TIMER_checkTimer(TILTMOVE_TIMER_GAME)) {
+	if (TIMER_checkTimer(TILTMOVE_TIMER_GAME) && data->isHost == TRUE) {
 		end(data);
 		data->code = gameStatus_Fail;
 	}
@@ -110,13 +157,43 @@ void TiltMove_run(struct GameData * data) {
 	// Get current MEMS coordinates and calculate delta.
 	float curMEMSX = (MEMS_GetInfo())->OutX_F4;
 	float curMEMSY = (MEMS_GetInfo())->OutY_F4;
-	
+
 	float deltaMEMSX = curMEMSX - prevMEMSX;
 	float deltaMEMSY = curMEMSY - prevMEMSY;
 
+	if (data->mode == Game_CoOp) {
+		
+		if (!(NET_GetFlags() && NETTICK_FLAG_TX)) {
+			float buff[2];
+			buff[1] = '0';
+			if (data->isHost)
+				buff[0] = ballXCoord;
+			else
+				buff[0] = ballYCoord;
+			NET_TransmitStringPacket(PACKET_gameData, (u8 *) buff);
+		}
+
+		//In CoOp mode, check for incoming packets and deal with them.
+		if (NET_GetFlags() & NETTICK_FLAG_RX && NET_GetPacketType() == PACKET_gameData) {
+			float buff[2];
+			NET_GetPacketData((u8 * )buff);
+			if (data->isHost) {
+				ballYCoord = buff[0];
+			}
+			else {
+				ballXCoord = buff[0];
+			}
+		}
+	
+		if (data->isHost == TRUE)
+			deltaMEMSY = 0;
+		else
+			deltaMEMSX = 0;
+	}
+
 	// Update ball position.
-	ballXCoord += (deltaMEMSX / 1000);
-	ballYCoord += (deltaMEMSY / 1000);
+	ballXCoord += (deltaMEMSX / 1000.0);
+	ballYCoord += (deltaMEMSY / 1000.0);
 	
 	// Are we still within the track?
 	/*
@@ -138,80 +215,26 @@ void TiltMove_run(struct GameData * data) {
 				   - (yCoords[0] - yCoords[5])*(ballXCoord - xCoords[5]) );
 	inside = inside & (position == 1);
 	
-	if (!inside) {
+	if (!inside && data->isHost == TRUE) {
 		data->code = gameStatus_Fail;
 		end(data);
 	}
 	
 	// Are we at B yet?
 	if ( absolute( ballXCoord - bXCoord) <= radius &&
-		 absolute( ballYCoord - bYCoord) <= radius) {
+		 absolute( ballYCoord - bYCoord) <= radius &&
+	     data->isHost == TRUE) {
 		
 		data->code = gameStatus_Success;
 		data->score = TIMER_ticksLeft(TILTMOVE_TIMER_GAME);
 		end(data);
 	}
+
+	TIMER_drawTicker(TILTMOVE_TIMER_GAME);
 }
 
 __attribute__((section(".rodata"))) static void init(struct GameData * data) {
-	// Initialise random number generator. (do we want to do this?)
-	if (!randomInit) {
-		init_rand(23);
-		randomInit = 1;
-	}
-	
-	aXCoord = aYCoord = bXCoord = bYCoord = 0;
 
-	while (abs(aXCoord - bXCoord) < (radius * 5) || abs(aYCoord - bYCoord) < (radius * 5)) {
-		// Set start and finish to random locations.
-		aXCoord = (rand_cmwc() % 90) + 10;
-		aYCoord = (rand_cmwc() % 30) + 10;
-		bXCoord = (rand_cmwc() % 90) + 10;
-		bYCoord = (rand_cmwc() % 30) + 10 + 70;
-		
-		// Maybe flip.
-		if (rand_bool() == TRUE) {
-			int temp = aXCoord;
-			aXCoord = aYCoord;
-			aYCoord = temp;
-			
-			temp = bXCoord;
-			bXCoord = bYCoord;
-			bYCoord = temp;
-		}
-	}	
-	initialised = 1;
-	
-	float l = 9;
-	float ux = 9 * cos(atan2(bYCoord - aYCoord, bXCoord - aXCoord));
-	float uy = 9 * sin(atan2(bYCoord - aYCoord, bXCoord - aXCoord));
-	
-
-	xCoords[0] = aXCoord - uy;
-	xCoords[1] = aXCoord - ux;
-	xCoords[2] = aXCoord + uy;
-	xCoords[3] = bXCoord + uy;
-	xCoords[4] = bXCoord + ux;
-	xCoords[5] = bXCoord - uy;
-
-	yCoords[0] = aYCoord + ux;
-	yCoords[1] = aYCoord - uy;
-	yCoords[2] = aYCoord - ux; 
-	yCoords[3] = bYCoord - ux;
-	yCoords[4] = bYCoord + uy;
-	yCoords[5] = bYCoord + ux;
-
-	// Set game status to "in progress".
-	data->code = gameStatus_InProgress;
-	
-	// Set up drawing.
-	DRAW_SetTextColor(RGB_BLUE);
-	DRAW_SetBGndColor(RGB_WHITE);
-	
-	// Set ball initial position to A.
-	ballXCoord = aXCoord;
-	ballYCoord = aYCoord;
-	
 	// Draw instructions.
 	DRAW_Clear();
 	DRAW_DisplayStringWithMode(0,
@@ -236,14 +259,82 @@ __attribute__((section(".rodata"))) static void init(struct GameData * data) {
 							   "flat",
 							   ALL_SCREEN, 0, 1);
 
+	//Host sets up coordinates
+	if (data->isHost == TRUE) {
+		// Initialise random number generator. (do we want to do this?)
+		if (!randomInit) {
+			init_rand(23);
+			randomInit = 1;
+		}
+		
+		aXCoord = aYCoord = bXCoord = bYCoord = 0;
+
+		while (absolute(aXCoord - bXCoord) < (radius * 5.0) && absolute(aYCoord - bYCoord) < (radius * 5.0)) {
+			// Set start and finish to random locations.
+			aXCoord = (rand_cmwc() % (SCREEN_WIDTH - 30)) + 15;
+			aYCoord = (rand_cmwc() % 30) + 15;
+			bXCoord = (rand_cmwc() % (SCREEN_WIDTH - 30)) + 15;
+			bYCoord = SCREEN_HEIGHT - ((rand_cmwc() % 30) + 15);
+			
+			// Maybe flip.
+			if (rand_bool() == TRUE) {
+				int temp = aXCoord;
+				aXCoord = aYCoord;
+				aYCoord = temp;
+				
+				temp = bXCoord;
+				bXCoord = bYCoord;
+				bYCoord = temp;
+			}
+		}	
 							   
 	// Initialise timers.
-	TIMER_initTimer(TILTMOVE_TIMER_GAME, TIME_SECOND * 6);
-	TIMER_initTimer(TILTMOVE_TIMER_INSTRUCTIONS, TIME_SECOND * 2);
+	if (data->isHost == TRUE) TIMER_initTimer(TILTMOVE_TIMER_INSTRUCTIONS, TIME_SECOND * 2);
 	TIMER_disableTimer(TILTMOVE_TIMER_DRAWING); // This one is disabled for initial drawing.
+	
+	}
+	state = TM_State_INSTRUCTIONS;
+
+}
+
+static void beginPlay(struct GameData * data) {
+
+	//So THIS is why they taught us vectors!
+	float size = data->mode == Game_CoOp ? 57 : 10;
+	float ux = size * cos(atan2(bYCoord - aYCoord, bXCoord - aXCoord));
+	float uy = size * sin(atan2(bYCoord - aYCoord, bXCoord - aXCoord));
+	
+	xCoords[0] = aXCoord - uy;
+	xCoords[1] = aXCoord - ux;
+	xCoords[2] = aXCoord + uy;
+	xCoords[3] = bXCoord + uy;
+	xCoords[4] = bXCoord + ux;
+	xCoords[5] = bXCoord - uy;
+
+	yCoords[0] = aYCoord + ux;
+	yCoords[1] = aYCoord - uy;
+	yCoords[2] = aYCoord - ux; 
+	yCoords[3] = bYCoord - ux;
+	yCoords[4] = bYCoord + uy;
+	yCoords[5] = bYCoord + ux;
+
+	// Set game status to "in progress".
+	data->code = gameStatus_InProgress;
+	
+	// Set up drawing.
+	DRAW_SetTextColor(RGB_BLUE);
+	DRAW_SetBGndColor(RGB_WHITE);
+	
+	// Set ball initial position to A.
+	ballXCoord = aXCoord;
+	ballYCoord = aYCoord;
+
+	TIMER_initTimer(TILTMOVE_TIMER_GAME, TIME_SECOND * (data->mode == Game_SinglePlayer ? 5 : 15));
+	state = TM_State_PLAYING;
+	
 }
 
 __attribute__((section(".rodata"))) static void end(struct GameData * data) {
-	initialised = 0;
+	state = TM_State_START;
 	randomInit = 0;
 }
