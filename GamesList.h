@@ -13,7 +13,7 @@
 #include "minigames/SquishTheBugs.h"
 
 gameRunFunction minigamesSinglePlayer[] = { BalloonInflate_run, TiltMove_run, SquishTheBugs_run };
-gameRunFunction minigamesCoOp[] = { TiltMove_run };
+gameRunFunction minigamesCoOp[] = { TiltMove_run};
 gameRunFunction minigamesVs[] = { BalloonInflate_run };
 
 #endif

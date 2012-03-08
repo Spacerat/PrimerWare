@@ -115,6 +115,7 @@ static void play(struct GameData * data) {
 	if (TIMER_checkTimer(TILTMOVE_TIMER_GAME) && data->isHost == TRUE) {
 		end(data);
 		data->code = gameStatus_Fail;
+		return;
 	}
 	
 	// If it's time to re-draw the track then do so.
@@ -164,24 +165,25 @@ static void play(struct GameData * data) {
 	if (data->mode == Game_CoOp) {
 		
 		if (!(NET_GetFlags() & NETTICK_FLAG_TX)) {
-			float buff[2];
-			buff[1] = '0';
+			u8 buff[2];
+			buff[1] = '\0';
 			if (data->isHost)
-				buff[0] = ballXCoord;
+				buff[0] = (u8) ballXCoord;
 			else
-				buff[0] = ballYCoord;
-			NET_TransmitStringPacket(PACKET_gameData, (u8 *) buff);
+				buff[0] = (u8) ballYCoord;
+			NET_TransmitStringPacket(PACKET_gameData, buff);
 		}
 
 		//In CoOp mode, check for incoming packets and deal with them.
 		if (NET_GetFlags() & NETTICK_FLAG_RX && NET_GetPacketType() == PACKET_gameData) {
-			float buff[2];
-			NET_GetPacketData((u8 * )buff);
+			u8 buff[2];
+			NET_GetPacketData(buff);
+			float coord = (float) buff[0];
 			if (data->isHost) {
-				ballYCoord = buff[0];
+				ballYCoord = (coord > 0 && coord < SCREEN_HEIGHT ? coord : ballYCoord);
 			}
 			else {
-				ballXCoord = buff[0];
+				ballXCoord = (coord > 0 && coord < SCREEN_WIDTH ? coord : ballXCoord);
 			}
 		}
 	
@@ -218,6 +220,7 @@ static void play(struct GameData * data) {
 	if (!inside && data->isHost == TRUE) {
 		data->code = gameStatus_Fail;
 		end(data);
+		return;
 	}
 	
 	// Are we at B yet?
@@ -262,10 +265,10 @@ __attribute__((section(".rodata"))) static void init(struct GameData * data) {
 	//Host sets up coordinates
 	if (data->isHost == TRUE) {
 		// Initialise random number generator. (do we want to do this?)
-		if (!randomInit) {
+		/*if (!randomInit) {
 			init_rand(23);
 			randomInit = 1;
-		}
+		}*/
 		
 		aXCoord = aYCoord = bXCoord = bYCoord = 0;
 
@@ -300,7 +303,7 @@ __attribute__((section(".rodata"))) static void init(struct GameData * data) {
 static void beginPlay(struct GameData * data) {
 
 	//So THIS is why they taught us vectors!
-	float size = data->mode == Game_CoOp ? 57 : 10;
+	float size = data->mode == Game_CoOp ? 20 : 10;
 	float ux = size * cos(atan2(bYCoord - aYCoord, bXCoord - aXCoord));
 	float uy = size * sin(atan2(bYCoord - aYCoord, bXCoord - aXCoord));
 	
