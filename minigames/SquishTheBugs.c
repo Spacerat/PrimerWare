@@ -15,9 +15,9 @@
 #define STB_TIMER_GAME 1
 #define STB_TIMER_INSTRUCTIONS 2
 #define STB_TIMER_DRAWING 3
-#define STB_BUGS_MP 10 // Number of bugs in multiplayer
+#define STB_BUGS_MP 6 // Number of bugs in multiplayer
 #define STB_BUGS_SP 5 // Number of bugs in singpleplayer
-#define STB_BUG_SIZE 6 // Radius of bugs.
+#define STB_BUG_SIZE 8 // Radius of bugs.
 
 
 static bool numBugs = 0;
@@ -34,12 +34,27 @@ static void draw(void);
 
 void SquishTheBugs_run(struct GameData * data) {
 	if (!initialised) init(data);
-		
+	
+	// Check if the game is no longer supposed to be running, and run de-initialisation code if that's the case.
+	if (data->code != gameStatus_InProgress) {
+		end(data);
+		return;
+	}
+	
 	// Have we displayed the instructions for long enough?
 	if (!TIMER_checkTimer(STB_TIMER_INSTRUCTIONS)) {
 		return;
 	}
 		
+	// Has a bug been killed remotely?
+	if (NET_GetFlags() & NETTICK_FLAG_RX && NET_GetPacketType() == PACKET_gameData && data->mode == Game_CoOp) {
+		u8 buff[2];
+		NET_GetPacketData(buff);
+		int bugToKill = buff[0] - 1;
+		bugsLeft --; //?
+		bugAlive[bugToKill] = 0;
+	}
+	
 	// Draw the living bugs.
 	if (!TIMER_isEnabled(STB_TIMER_DRAWING) || TIMER_checkTimer(STB_TIMER_DRAWING )) draw();
 
@@ -61,7 +76,7 @@ void SquishTheBugs_run(struct GameData * data) {
 				float xDelta = bugsX[i] - xPos;
 				float yDelta = bugsY[i] - yPos;
 				
-				if ((xDelta * xDelta) + (yDelta * yDelta) <= (STB_BUG_SIZE * STB_BUG_SIZE)+1) {
+				if ((xDelta * xDelta) + (yDelta * yDelta) <= (STB_BUG_SIZE * STB_BUG_SIZE) + 3) {
 					// Draw a red circle as it has been squished.
 					DRAW_Circle(bugsX[i],
 								bugsY[i],
@@ -72,6 +87,14 @@ void SquishTheBugs_run(struct GameData * data) {
 					bugAlive[i] = 0;
 					
 					bugsLeft--;
+					
+					// If we're multiplayer, tell the other device that i is dead.
+					if (data->mode == Game_CoOp) {
+						u8 buff[2];
+						buff[0] = i + 1;
+						buff[1] = '\0';
+						NET_TransmitStringPacket(PACKET_gameData, buff);
+					}
 				}
 			}
 		}		
@@ -111,23 +134,22 @@ void SquishTheBugs_run(struct GameData * data) {
 	}
 	
 	// Have we won or lost?
-	if (bugsLeft == 0) {
-		data->code = gameStatus_Success;
-		data->score = TIMER_ticksLeft(STB_TIMER_GAME);
-		end(data);
-	} else if (TIMER_checkTimer(STB_TIMER_GAME)) {
-		data->code = gameStatus_Fail;
-		end(data);
+	if (data->isHost == TRUE) {
+		if (bugsLeft == 0) {
+			data->code = gameStatus_Success;
+			//data->score = TIMER_ticksLeft(STB_TIMER_GAME);
+			end(data);
+		} else if (TIMER_checkTimer(STB_TIMER_GAME)) {
+			data->code = gameStatus_Fail;
+			end(data);
+		}
 	}
-	
 }
 
 static void init(struct GameData * data) {
 	
 	// Initialise the bugs.
 	int i;
-
-	
 
 	if (data->mode == Game_SinglePlayer)
 		numBugs = STB_BUGS_SP;
@@ -211,4 +233,5 @@ static void end(struct GameData * data) {
 	free(bugsY);
 	free(bugsDir);
 	free(bugAlive);
+	TIMER_disableTimer(STB_TIMER_INSTRUCTIONS);
 }

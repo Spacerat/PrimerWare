@@ -26,7 +26,7 @@ static u8 net_flags = 0;
 #ifdef USE_IR
 	#define send_delay 12
 #else
-	#define send_delay 3
+	#define send_delay 7
 #endif
 static u16 send_countdown = send_delay;
 

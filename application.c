@@ -273,7 +273,7 @@ enum MENU_code Application_Handler(void)
 			if (gamedata.isHost) {
 				currentMinigame = rand_cmwc() % numMinigames;
 				u8 buff[3];
-				((u16 * )buff)[0] = gamedata.score;
+				((u16 * )buff)[0] = 0xFFFF;//gamedata.score;
 				buff[2] = '\0';
 				NET_TransmitStringPacket(gamedata.code == gameStatus_Success ? PACKET_gameWon : PACKET_gameFail, buff);
 			}
@@ -312,7 +312,7 @@ enum MENU_code Application_Handler(void)
 				else {
 					screen = display_StageStart;
 					u8 buff[2];
-					buff[0] = currentMinigame;
+					buff[0] = ~currentMinigame;
 					buff[1] = '\0';
 					NET_TransmitStringPacket(PACKET_NextGame, buff);
 				}
@@ -328,7 +328,7 @@ enum MENU_code Application_Handler(void)
 					case PACKET_NextGame:
 						NET_GetPacketData(buff);
 						screen = display_StageStart;
-						currentMinigame = buff[0];
+						currentMinigame = ~buff[0];
 						screenDrawn = FALSE;
 						break;
 					case PACKET_roundFinish:
