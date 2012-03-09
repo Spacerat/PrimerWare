@@ -61,7 +61,7 @@ enum MENU_code Application_Ini(void) {
 	LCD_SetRotateScreen(0);
 	
 	// Initialise the PRNG.
-	init_rand(234);
+	init_rand(2341);
    	NET_RCC_Configuration();
 
 	UTIL_SetPll(SPEED_VERY_HIGH);
@@ -189,7 +189,7 @@ enum MENU_code Application_Handler(void)
 		// If we have chosen a game type...
 		if (menuCode != MenuCode_Nothing) {			
 			// Populate minigame array.
-			init_rand(123);
+			//init_rand(123);
 			
 			if (menuCode == MenuCode_SinglePlayer) {
 				//Jump straight in if single player is selected
@@ -203,13 +203,13 @@ enum MENU_code Application_Handler(void)
 				//If multiplayer, send a request and wait for an ACK
 				Transmit_RequestGame(TRUE);
 				gameRequested = TRUE;
-
+				gamedata.mode = Game_CoOp;
 			}
 			else {
 				Transmit_RequestGame(FALSE);
 				gameRequested = TRUE;
 				//theMinigames = minigamesVs;
-				//gamedata.mode = Game_Vs;
+				gamedata.mode = Game_Vs;
 			}
 			
 
@@ -236,23 +236,40 @@ enum MENU_code Application_Handler(void)
 		if (gamedata.code == gameStatus_InProgress) {
 			minigameArray[currentMinigame](&gamedata);	
 		}
-		//Slave is not allowed to decide whether it has won.
+		
+		if (gamedata.mode == Game_CoOp) {
+			//Slave is not allowed to decide whether it has won.
 
-		if (gamedata.isHost == FALSE) gamedata.code = gameStatus_InProgress;
+			if (gamedata.isHost == FALSE) gamedata.code = gameStatus_InProgress;
 
-		// Slave checks for "You win/lose!" packets and overrides the 
-		// game's reported status. Also receives increments score
-		if (gamedata.isHost == FALSE && (NET_GetFlags() & NETTICK_FLAG_RX)) {
-			u8 type = NET_GetPacketType();
-			u8 buff[PACKET_MAX_SIZE];
-			if (type == PACKET_gameWon || type == PACKET_gameFail) {
-				NET_GetPacketData(buff);
-				score += ((u16 * )buff)[0];
-				gamedata.code = (type == PACKET_gameFail ? gameStatus_Fail : gameStatus_Success);
-				//Run the game code again with the changed state.
-				//The game is responsible for checking that it is no longer supposed
-				//to be running, and so calling any teardown code.
-				minigameArray[currentMinigame](&gamedata);	
+			// Slave checks for "You win/lose!" packets and overrides the 
+			// game's reported status. Also receives increments score
+			if (gamedata.isHost == FALSE && (NET_GetFlags() & NETTICK_FLAG_RX)) {
+				u8 type = NET_GetPacketType();
+				u8 buff[PACKET_MAX_SIZE];
+				if (type == PACKET_gameWon || type == PACKET_gameFail) {
+					NET_GetPacketData(buff);
+					score += ((u16 * )buff)[0];
+					gamedata.code = (type == PACKET_gameFail ? gameStatus_Fail : gameStatus_Success);
+					//Run the game code again with the changed state.
+					//The game is responsible for checking that it is no longer supposed
+					//to be running, and so calling any teardown code.
+					minigameArray[currentMinigame](&gamedata);	
+				}
+			}
+		} else if (gamedata.mode == Game_Vs) {
+			// Check for a win/lose packet from the opponent (opponent's status) and react accordingly.
+			
+			if (NET_GetFlags() & NETTICK_FLAG_RX) {
+				u8 type = NET_GetPacketType();
+				
+				if (type == PACKET_gameWon || type == PACKET_gameFail) {
+					gamedata.code = (type == PACKET_gameFail ? gameStatus_Success : gameStatus_Fail);
+					//Run the game code again with the changed state.
+					//The game is responsible for checking that it is no longer supposed
+					//to be running, and so calling any teardown code.
+					minigameArray[currentMinigame](&gamedata);	
+				}
 			}
 		}
 	
@@ -263,7 +280,7 @@ enum MENU_code Application_Handler(void)
 			
 			
 			if (gamedata.code == gameStatus_Success) {
-				if (gamedata.isHost) score += gamedata.score;
+				if (gamedata.isHost || gamedata.mode == Game_Vs) score += gamedata.score;
 				screen = display_StageSuccess;
 			} else {
 				lives--;
@@ -273,11 +290,11 @@ enum MENU_code Application_Handler(void)
 			if (gamedata.isHost) {
 				currentMinigame = rand_cmwc() % numMinigames;
 				u8 buff[3];
-				((u16 * )buff)[0] = 0xFFFF;//gamedata.score;
+				((u16 * )buff)[0] = gamedata.score;
 				buff[2] = '\0';
 				NET_TransmitStringPacket(gamedata.code == gameStatus_Success ? PACKET_gameWon : PACKET_gameFail, buff);
 			}
-			gamesPlayed ++;
+			gamesPlayed++;
 			gamedata.code = gameStatus_InProgress;
 			gamedata.score = 0;
 		
@@ -292,9 +309,55 @@ enum MENU_code Application_Handler(void)
 			screenDrawn = TRUE;
 		}
 		
-		//Master waits a few moments until starting a new game.
-		//Slave waits for the master to tell it which game to play.
-		if (gamedata.isHost) {
+		if (gamedata.mode != Game_Vs) {
+			//Master waits a few moments until starting a new game.
+			//Slave waits for the master to tell it which game to play.
+			if (gamedata.isHost) {
+				if(!TIMER_isEnabled(0)) {
+					TIMER_initTimer(0, stageScreenTimerValue);
+				}
+				if (TIMER_checkTimer(0)) {
+					TIMER_disableTimer(0);
+					
+					// Check if we need to end the round.
+					if (lives == 0 || gamesPlayed == ROUNDLENGTH) {
+						screen = display_RoundFinish;
+						u16 buff[2];
+						buff[0] = score;
+						buff[1] = '\0';
+						NET_TransmitStringPacket(PACKET_roundFinish, (u8 * )buff);
+					} else {
+						screen = display_StageStart;
+						u8 buff[2];
+						buff[0] = ~currentMinigame;
+						buff[1] = '\0';
+						NET_TransmitStringPacket(PACKET_NextGame, buff);
+					}
+					screenDrawn = FALSE;
+				}
+			
+			} else {
+				if (NET_GetFlags() & NETTICK_FLAG_RX) {
+					u8 type = NET_GetPacketType();
+					u8 buff[PACKET_MAX_SIZE];
+					switch (type) {
+						case PACKET_NextGame:
+							NET_GetPacketData(buff);
+							screen = display_StageStart;
+							currentMinigame = ~buff[0];
+							screenDrawn = FALSE;
+							break;
+						case PACKET_roundFinish:
+							NET_GetPacketData(buff);
+							screen = display_RoundFinish;
+							score = ((u16 *) buff)[0];
+							break;
+					}
+				}
+			}
+		} else {
+			//Master waits a few moments until starting a new game.
+			//Slave waits for the master to tell it which game to play.
 			if(!TIMER_isEnabled(0)) {
 				TIMER_initTimer(0, stageScreenTimerValue);
 			}
@@ -308,8 +371,7 @@ enum MENU_code Application_Handler(void)
 					buff[0] = score;
 					buff[1] = '\0';
 					NET_TransmitStringPacket(PACKET_roundFinish, (u8 * )buff);
-				}
-				else {
+				} else if (gamedata.isHost) {
 					screen = display_StageStart;
 					u8 buff[2];
 					buff[0] = ~currentMinigame;
@@ -317,25 +379,23 @@ enum MENU_code Application_Handler(void)
 					NET_TransmitStringPacket(PACKET_NextGame, buff);
 				}
 				screenDrawn = FALSE;
-			}
-		
-		}
-		else {
-			if (NET_GetFlags() & NETTICK_FLAG_RX) {
-				u8 type = NET_GetPacketType();
-				u8 buff[PACKET_MAX_SIZE];
-				switch (type) {
-					case PACKET_NextGame:
-						NET_GetPacketData(buff);
-						screen = display_StageStart;
-						currentMinigame = ~buff[0];
-						screenDrawn = FALSE;
-						break;
-					case PACKET_roundFinish:
-						NET_GetPacketData(buff);
-						screen = display_RoundFinish;
-						score = ((u16 *) buff)[0];
-						break;
+			
+			} else {
+				if (NET_GetFlags() & NETTICK_FLAG_RX) {
+					u8 type = NET_GetPacketType();
+					u8 buff[PACKET_MAX_SIZE];
+					switch (type) {
+						case PACKET_NextGame:
+							NET_GetPacketData(buff);
+							screen = display_StageStart;
+							currentMinigame = ~buff[0];
+							screenDrawn = FALSE;
+							break;
+						case PACKET_roundFinish:
+							NET_GetPacketData(buff);
+							screen = display_RoundFinish;
+							break;
+					}
 				}
 			}
 		}

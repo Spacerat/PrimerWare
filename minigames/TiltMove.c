@@ -39,7 +39,6 @@ static float prevMEMSX; // Previous MEMS X coordinate.
 static float prevMEMSY; // Previous MEMS Y coordinate.
 static const int radius = 3; // Radius of ball.
 #define radMult 3
-static bool randomInit = 0; // Have we initialised the PRNG?
 
 static void init(struct GameData * data);
 static void end(struct GameData * data);
@@ -112,8 +111,8 @@ void TiltMove_run(struct GameData * data) {
 
 static void play(struct GameData * data) {
 	// Have we run out of time?
-	if (TIMER_checkTimer(TILTMOVE_TIMER_GAME) && data->isHost == TRUE) {
-		end(data);
+	if (TIMER_checkTimer(TILTMOVE_TIMER_GAME)/* && data->isHost == TRUE*/) {
+		//end(data);
 		data->code = gameStatus_Fail;
 		return;
 	}
@@ -217,20 +216,20 @@ static void play(struct GameData * data) {
 				   - (yCoords[0] - yCoords[5])*(ballXCoord - xCoords[5]) );
 	inside = inside & (position == 1);
 	
-	if (!inside && data->isHost == TRUE) {
+	if (!inside /*&& data->isHost == TRUE*/) {
 		data->code = gameStatus_Fail;
-		end(data);
+		//end(data);
 		return;
 	}
 	
 	// Are we at B yet?
 	if ( absolute( ballXCoord - bXCoord) <= radius &&
-		 absolute( ballYCoord - bYCoord) <= radius &&
-	     data->isHost == TRUE) {
+		 absolute( ballYCoord - bYCoord) <= radius /*&&
+	     data->isHost == TRUE*/) {
 		
 		data->code = gameStatus_Success;
 		data->score = TIMER_ticksLeft(TILTMOVE_TIMER_GAME);
-		end(data);
+		//end(data);
 	}
 
 	TIMER_drawTicker(TILTMOVE_TIMER_GAME);
@@ -264,11 +263,6 @@ __attribute__((section(".rodata"))) static void init(struct GameData * data) {
 
 	//Host sets up coordinates
 	if (data->isHost == TRUE) {
-		// Initialise random number generator. (do we want to do this?)
-		/*if (!randomInit) {
-			init_rand(23);
-			randomInit = 1;
-		}*/
 		
 		aXCoord = aYCoord = bXCoord = bYCoord = 0;
 
@@ -339,5 +333,4 @@ static void beginPlay(struct GameData * data) {
 
 __attribute__((section(".rodata"))) static void end(struct GameData * data) {
 	state = TM_State_START;
-	randomInit = 0;
 }

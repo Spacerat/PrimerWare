@@ -134,16 +134,16 @@ void SquishTheBugs_run(struct GameData * data) {
 	}
 	
 	// Have we won or lost?
-	if (data->isHost == TRUE) {
+	//if (data->isHost == TRUE) {
 		if (bugsLeft == 0) {
 			data->code = gameStatus_Success;
-			//data->score = TIMER_ticksLeft(STB_TIMER_GAME);
-			end(data);
+			data->score = TIMER_ticksLeft(STB_TIMER_GAME);
+			//end(data);
 		} else if (TIMER_checkTimer(STB_TIMER_GAME)) {
 			data->code = gameStatus_Fail;
-			end(data);
+			//end(data);
 		}
-	}
+	//}
 }
 
 static void init(struct GameData * data) {

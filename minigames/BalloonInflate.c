@@ -100,8 +100,6 @@ void BalloonInflate_run(struct GameData * data) {
 		u8 xPos = (u8)(t.position);
 		u8 yPos = (u8)(t.position>>8);
 	
-		
-		
 		int xDelta = BALLOONINFLATE_X - xPos;
 		int yDelta = BALLOONINFLATE_Y - yPos;
 		
@@ -115,8 +113,8 @@ void BalloonInflate_run(struct GameData * data) {
 		
 	}
 	// Is the balloon fully inflated?
-	if (data->isHost && BalloonInflate_taps > TapsNeeded(data->mode)) {
-		BalloonInflate_end();
+	if (BalloonInflate_taps > TapsNeeded(data->mode)) {
+		//BalloonInflate_end();
 		data->code = gameStatus_Success;
 		data->score = TIMER_ticksLeft(BALLOONINFLATE_TIMER_GAME);
 	}
