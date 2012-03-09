@@ -198,17 +198,14 @@ enum MENU_code Application_Handler(void)
 				gamedata.isHost = TRUE;
 				screen = display_StageStart;
 			
-			}
-			else if (menuCode == MenuCode_TwoPlayerCoOp) {
+			} else if (menuCode == MenuCode_TwoPlayerCoOp) {
 				//If multiplayer, send a request and wait for an ACK
 				Transmit_RequestGame(TRUE);
 				gameRequested = TRUE;
 				gamedata.mode = Game_CoOp;
-			}
-			else {
+			} else {
 				Transmit_RequestGame(FALSE);
 				gameRequested = TRUE;
-				//theMinigames = minigamesVs;
 				gamedata.mode = Game_Vs;
 			}
 			
@@ -286,14 +283,15 @@ enum MENU_code Application_Handler(void)
 				lives--;
 				screen = display_StageFail;
 			}
-			// If we are the host (or SP), pick a new minigame and alert the client;
-			if (gamedata.isHost) {
+			// If we are the host (or SP, or VS), pick a new minigame and alert the client;
+			if (gamedata.isHost || gamedata.mode == Game_Vs) {
 				currentMinigame = rand_cmwc() % numMinigames;
 				u8 buff[3];
 				((u16 * )buff)[0] = gamedata.score;
 				buff[2] = '\0';
 				NET_TransmitStringPacket(gamedata.code == gameStatus_Success ? PACKET_gameWon : PACKET_gameFail, buff);
 			}
+			
 			gamesPlayed++;
 			gamedata.code = gameStatus_InProgress;
 			gamedata.score = 0;
@@ -306,58 +304,31 @@ enum MENU_code Application_Handler(void)
 				GAMEDRAW_stageSuccess();
 			else
 				GAMEDRAW_stageFail();
+			
 			screenDrawn = TRUE;
 		}
 		
-		if (gamedata.mode != Game_Vs) {
-			//Master waits a few moments until starting a new game.
-			//Slave waits for the master to tell it which game to play.
-			if (gamedata.isHost) {
-				if(!TIMER_isEnabled(0)) {
-					TIMER_initTimer(0, stageScreenTimerValue);
+		if (gamedata.mode == Game_Vs) {
+			// Check if we need to end the round.
+				if (lives == 0 || gamesPlayed == ROUNDLENGTH) {
+					screen = display_RoundFinish;
+					u16 buff[2];
+					buff[0] = score;
+					buff[1] = '\0';
+					NET_TransmitStringPacket(PACKET_roundFinish, (u8 * )buff);
+				} else {
+					screen = display_StageStart;
+					u8 buff[2];
+					buff[0] = ~currentMinigame;
+					buff[1] = '\0';
+					NET_TransmitStringPacket(PACKET_NextGame, buff);
 				}
-				if (TIMER_checkTimer(0)) {
-					TIMER_disableTimer(0);
-					
-					// Check if we need to end the round.
-					if (lives == 0 || gamesPlayed == ROUNDLENGTH) {
-						screen = display_RoundFinish;
-						u16 buff[2];
-						buff[0] = score;
-						buff[1] = '\0';
-						NET_TransmitStringPacket(PACKET_roundFinish, (u8 * )buff);
-					} else {
-						screen = display_StageStart;
-						u8 buff[2];
-						buff[0] = ~currentMinigame;
-						buff[1] = '\0';
-						NET_TransmitStringPacket(PACKET_NextGame, buff);
-					}
-					screenDrawn = FALSE;
-				}
-			
-			} else {
-				if (NET_GetFlags() & NETTICK_FLAG_RX) {
-					u8 type = NET_GetPacketType();
-					u8 buff[PACKET_MAX_SIZE];
-					switch (type) {
-						case PACKET_NextGame:
-							NET_GetPacketData(buff);
-							screen = display_StageStart;
-							currentMinigame = ~buff[0];
-							screenDrawn = FALSE;
-							break;
-						case PACKET_roundFinish:
-							NET_GetPacketData(buff);
-							screen = display_RoundFinish;
-							score = ((u16 *) buff)[0];
-							break;
-					}
-				}
-			}
-		} else {
-			//Master waits a few moments until starting a new game.
-			//Slave waits for the master to tell it which game to play.
+				screenDrawn = FALSE;
+		}
+		
+		//Master waits a few moments until starting a new game.
+		//Slave waits for the master to tell it which game to play.
+		if (gamedata.isHost) {
 			if(!TIMER_isEnabled(0)) {
 				TIMER_initTimer(0, stageScreenTimerValue);
 			}
@@ -371,7 +342,7 @@ enum MENU_code Application_Handler(void)
 					buff[0] = score;
 					buff[1] = '\0';
 					NET_TransmitStringPacket(PACKET_roundFinish, (u8 * )buff);
-				} else if (gamedata.isHost) {
+				} else {
 					screen = display_StageStart;
 					u8 buff[2];
 					buff[0] = ~currentMinigame;
@@ -379,23 +350,26 @@ enum MENU_code Application_Handler(void)
 					NET_TransmitStringPacket(PACKET_NextGame, buff);
 				}
 				screenDrawn = FALSE;
-			
-			} else {
-				if (NET_GetFlags() & NETTICK_FLAG_RX) {
-					u8 type = NET_GetPacketType();
-					u8 buff[PACKET_MAX_SIZE];
-					switch (type) {
-						case PACKET_NextGame:
-							NET_GetPacketData(buff);
-							screen = display_StageStart;
-							currentMinigame = ~buff[0];
-							screenDrawn = FALSE;
-							break;
-						case PACKET_roundFinish:
-							NET_GetPacketData(buff);
-							screen = display_RoundFinish;
-							break;
-					}
+			}
+		
+		} 
+		
+		if (!gamedata.isHost) {
+			if (NET_GetFlags() & NETTICK_FLAG_RX) {
+				u8 type = NET_GetPacketType();
+				u8 buff[PACKET_MAX_SIZE];
+				switch (type) {
+					case PACKET_NextGame:
+						NET_GetPacketData(buff);
+						screen = display_StageStart;
+						currentMinigame = ~buff[0];
+						screenDrawn = FALSE;
+						break;
+					case PACKET_roundFinish:
+						NET_GetPacketData(buff);
+						screen = display_RoundFinish;
+						score = ((u16 *) buff)[0];
+						break;
 				}
 			}
 		}

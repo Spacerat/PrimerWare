@@ -48,7 +48,10 @@ __attribute__((section(".rodata"))) enum MenuCode MENUHANDLER_run() {
 			yPos <= MENUDRAW_TOPBOX_YCOORD + MENUDRAW_BOXES_HEIGHT) {
 						
 			if (playersMenu) return MenuCode_SinglePlayer;
-			else return MenuCode_TwoPlayerCoOp;
+			else {
+				playersMenu = 1;
+				return MenuCode_TwoPlayerCoOp;
+			}
 		// Bottom button pressed.
 		} else if (xPos >= MENUDRAW_BOXES_XCOORD &&
 				   xPos <= MENUDRAW_BOXES_XCOORD + MENUDRAW_BOXES_WIDTH &&
@@ -58,6 +61,7 @@ __attribute__((section(".rodata"))) enum MenuCode MENUHANDLER_run() {
 				playersMenu = 0;
 				MENUHANDLER_MultiPlayer();
 			} else {
+				playersMenu = 1;
 				return MenuCode_TwoPlayerVs;
 			}
 		}

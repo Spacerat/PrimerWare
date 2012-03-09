@@ -110,9 +110,15 @@ void TiltMove_run(struct GameData * data) {
 }
 
 static void play(struct GameData * data) {
+	// Check if the game is no longer supposed to be running, and run de-initialisation code if that's the case.
+	if (data->code != gameStatus_InProgress) {
+		end(data);
+		return;
+	}
+	
 	// Have we run out of time?
 	if (TIMER_checkTimer(TILTMOVE_TIMER_GAME)/* && data->isHost == TRUE*/) {
-		//end(data);
+		if (data->mode != Game_CoOp || data->isHost) end(data);
 		data->code = gameStatus_Fail;
 		return;
 	}
@@ -218,7 +224,7 @@ static void play(struct GameData * data) {
 	
 	if (!inside /*&& data->isHost == TRUE*/) {
 		data->code = gameStatus_Fail;
-		//end(data);
+		if (data->mode != Game_CoOp || data->isHost) end(data);
 		return;
 	}
 	
@@ -229,7 +235,7 @@ static void play(struct GameData * data) {
 		
 		data->code = gameStatus_Success;
 		data->score = TIMER_ticksLeft(TILTMOVE_TIMER_GAME);
-		//end(data);
+		if (data->mode != Game_CoOp || data->isHost) end(data);
 	}
 
 	TIMER_drawTicker(TILTMOVE_TIMER_GAME);

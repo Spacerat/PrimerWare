@@ -74,7 +74,7 @@ void BalloonInflate_run(struct GameData * data) {
 	
 	// Check if we've failed.
 	if (TIMER_checkTimer(BALLOONINFLATE_TIMER_GAME)) {
-		BalloonInflate_end();
+		if (data->mode != Game_CoOp || data->isHost) BalloonInflate_end();
 		data->code = gameStatus_Fail;
 	}
 
@@ -114,7 +114,7 @@ void BalloonInflate_run(struct GameData * data) {
 	}
 	// Is the balloon fully inflated?
 	if (BalloonInflate_taps > TapsNeeded(data->mode)) {
-		//BalloonInflate_end();
+		if (data->mode != Game_CoOp || data->isHost) BalloonInflate_end();
 		data->code = gameStatus_Success;
 		data->score = TIMER_ticksLeft(BALLOONINFLATE_TIMER_GAME);
 	}

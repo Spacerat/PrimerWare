@@ -138,10 +138,10 @@ void SquishTheBugs_run(struct GameData * data) {
 		if (bugsLeft == 0) {
 			data->code = gameStatus_Success;
 			data->score = TIMER_ticksLeft(STB_TIMER_GAME);
-			//end(data);
+			if (data->mode != Game_CoOp || data->isHost) end(data);
 		} else if (TIMER_checkTimer(STB_TIMER_GAME)) {
 			data->code = gameStatus_Fail;
-			//end(data);
+			if (data->mode != Game_CoOp || data->isHost) end(data);
 		}
 	//}
 }
